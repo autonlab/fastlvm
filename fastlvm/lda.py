@@ -40,12 +40,12 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         "keywords": ["large scale LDA", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
-            "uris": [ "https://github.com/manzilzaheer/fastlvm.git" ]
+            "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
         },
         "installation": [
         {
             "type": "PIP",
-            "package_uri": 'git+https://github.com/manzilzaheer/fastlvm.git@{git_commit}#egg=fastlvm'.format(
+            "package_uri": 'git+https://gitlab.datadrivendiscovery.org/cmu/fastlvm.git@{git_commit}#egg=fastlvm'.format(
                                           git_commit=utils.current_git_commit(os.path.dirname(__file__)))
         }
         ]
