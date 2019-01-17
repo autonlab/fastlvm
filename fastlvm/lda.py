@@ -22,6 +22,8 @@ class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
     vocab = hyperparams.UniformInt(lower=1, upper=1000000, default=1000, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='Vocab size.')
+    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
+    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
 
                 
 
@@ -57,6 +59,8 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
         self._vocab = hyperparams['vocab']
+        self._num_top = hyperparams['num_top']
+        self._seed = hyperparams['seed']
 
         self._training_inputs = None  # type: Inputs
         self._validation_inputs = None # type: Inputs
@@ -148,15 +152,10 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             Final per-token log likelihood (-ve log perplexity).
         """
         return ldac.evaluate(self._this, inputs)
- 
-    def produce_top_words(self, *, num_top: int) -> Outputs:
+
+    def produce_top_words(self) -> Outputs:
         """
         Get the top words of each topic for this model.
-
-        Parameters
-        ----------
-        num_top : int
-            The number of top words requested..
 
         Returns
         ----------
@@ -164,7 +163,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of size k containing list of size num_top words.
         """
 
-        return ldac.top_words(self._this, num_top)
+        return ldac.top_words(self._this, self._num_top)
 
     def produce_topic_matrix(self) -> Predicts:
         """
@@ -180,7 +179,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             self._ext = ldac.topic_matrix(self._this)
         return self._ext
    
-    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None, num_top: int) -> base.MultiCallResult:
+    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
 	        pass
 			 
     def get_params(self) -> Params:
@@ -210,7 +209,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         """
         self._this = ldac.deserialize(params['topic_matrix'])
 
-    def set_random_seed(self, *, seed: int) -> None:
+    def set_random_seed(self) -> None:
         """
         NOT SUPPORTED YET
         Sets a random seed for all operations from now on inside the primitive.
