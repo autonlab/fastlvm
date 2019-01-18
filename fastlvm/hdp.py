@@ -14,6 +14,7 @@ from d3m.metadata import params
 Inputs = container.List  # type: list of np.ndarray
 Outputs = container.List  # type: list of np.ndarray
 Predicts = container.ndarray  # type: np.ndarray
+VocabularyInputs = container.DataFrame  # DataFrame: one column, one word per row
 
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
@@ -21,7 +22,6 @@ class Params(params.Params):
 class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
-    vocab = hyperparams.UniformInt(lower=1, upper=1000000, default=1000, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='Vocab size.')
     num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
     seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
 
@@ -84,7 +84,6 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._this = None
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
-        self._vocab = hyperparams['vocab']
         self._num_top = hyperparams['num_top']
         self._seed = hyperparams['seed']
 
@@ -99,8 +98,8 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
     def __del__(self):
         if self._this is not None:
             hdpc.delete(self._this, self._ext)
-        
-    def set_training_data(self, *, training_inputs: Inputs, validation_inputs: Inputs) -> None:
+
+    def set_training_data(self, *, training_inputs: Inputs, validation_inputs: Inputs, vocabulary:VocabularyInputs) -> None:
         """
         Sets training data for HDP.
 
@@ -110,12 +109,15 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id.
         validation_inputs : Inputs
             A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id. This represents validation docs to validate the results learned after each iteration of canopy algorithm.
+        vocabulary : VocabularyInputs
+            An one-column DataFrame. Each row contains a word.
         """
 
         self._training_inputs = training_inputs
         self._validation_inputs = validation_inputs
 
-        vocab = [''.join(['w',str(i)]) for i in range(self._vocab)]
+        vocab_size = len(vocabulary.index)
+        vocab = [''.join(['w',str(i)]) for i in range(vocab_size)]
         self._this = hdpc.new(self._k, self._iters, vocab)
         
         self._fitted = False
