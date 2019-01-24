@@ -181,7 +181,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         return self._ext
 
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
-	        pass
+        pass
 
     def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], training_inputs: Inputs,
                           validation_inputs: Inputs, vocabulary: VocabularyInputs,
