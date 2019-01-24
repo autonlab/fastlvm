@@ -154,31 +154,15 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         """
         return ldac.evaluate(self._this, inputs)
 
-    # def produce_top_words(self) -> Outputs:
-    #     """
-    #     Get the top words of each topic for this model.
-    #
-    #     Returns
-    #     ----------
-    #     topic_matrix : list
-    #         A list of size k containing list of size num_top words.
-    #     """
-    #
-    #     return ldac.top_words(self._this, self._num_top)
-    #
-    # def produce_topic_matrix(self) -> Predicts:
-    #     """
-    #     Get current word|topic distribution matrix for this model.
-    #
-    #     Returns
-    #     ----------
-    #     topic_matrix : numpy.ndarray
-    #         A numpy array of shape (vocab_size,k) with each column containing the word|topic distribution.
-    #     """
-    #
-    #     if self._ext is None:
-    #         self._ext = ldac.topic_matrix(self._this)
-    #     return self._ext
+    def produce_top_words(self) -> Outputs:
+        """
+        Get the top words of each topic for this model.
+
+        Returns
+        ----------
+        topic_matrix : list
+            A list of size k containing list of size num_top words.
+        """
 
         return ldac.top_words(self._this, self._num_top)
 
