@@ -27,7 +27,7 @@ class HyperParams(hyperparams.Hyperparams):
 
 
 class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
-    
+
     metadata = metadata_base.PrimitiveMetadata({
         "id": "f410b951-1cb6-481c-8d95-2d97b31d411d",
         "version": "1.0",
@@ -49,7 +49,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         }
         ]
     })
-    
+
 
     def __init__(self, *, hyperparams: HyperParams) -> None:
         #super(LDA, self).__init__()
@@ -66,12 +66,12 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._ext = None
 
         self.hyperparams = hyperparams
-        
+
 
     def __del__(self):
         if self._this is not None:
             ldac.delete(self._this, self._ext)
-        
+
     def set_training_data(self, *, training_inputs: Inputs, validation_inputs: Inputs, vocabulary:VocabularyInputs) -> None:
         """
         Sets training data for LDA.
@@ -92,10 +92,10 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         vocab_size = len(vocabulary.index)
         vocab = [''.join(['w',str(i)]) for i in range(vocab_size)]
         self._this = ldac.new(self._k, self._iters, vocab)
-        
+
         self._fitted = False
 
-    
+
     def fit(self) -> None:
         """
         Inference on the latent Dirichley allocation model
@@ -120,7 +120,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         """
         return self._fitted
-        
+
     def produce(self, *, inputs: Inputs) -> base.CallResult[Outputs]:
         """
         Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs using the learned model.
@@ -182,6 +182,13 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
 	        pass
+
+    def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], training_inputs: Inputs,
+                          validation_inputs: Inputs, vocabulary: VocabularyInputs,
+                          timeout: float = None, iterations: int = None) -> base.MultiCallResult:  # type: ignore
+        return self._fit_multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
+                                       training_inputs=training_inputs, validation_inputs=validation_inputs,
+                                       vocabulary=vocabulary)
 
     def get_params(self) -> Params:
         """
