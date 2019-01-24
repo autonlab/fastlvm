@@ -208,7 +208,7 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         return self._ext
    
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
-	    pass 
+        pass
 
     def get_params(self) -> Params:
         """
