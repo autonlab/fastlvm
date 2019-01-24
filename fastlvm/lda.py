@@ -183,10 +183,11 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
         pass
 
-    def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], training_inputs: Inputs,
+    def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, training_inputs: Inputs,
                           validation_inputs: Inputs, vocabulary: VocabularyInputs,
                           timeout: float = None, iterations: int = None) -> base.MultiCallResult:  # type: ignore
         return self._fit_multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
+                                       inputs=inputs,
                                        training_inputs=training_inputs, validation_inputs=validation_inputs,
                                        vocabulary=vocabulary)
 
