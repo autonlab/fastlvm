@@ -180,13 +180,24 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
     #         self._ext = ldac.topic_matrix(self._this)
     #     return self._ext
 
-    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None,
-                      iterations: int = None, training_inputs: Inputs, validation_inputs: Inputs, vocabulary:VocabularyInputs) -> base.MultiCallResult:
-        output = self.produce(inputs=inputs)
-        result = {}
-        for method in produce_methods:
-            result[method] = output.value
-        return base.MultiCallResult(result)
+        return ldac.top_words(self._this, self._num_top)
+
+    def produce_topic_matrix(self) -> Predicts:
+        """
+        Get current word|topic distribution matrix for this model.
+
+        Returns
+        ----------
+        topic_matrix : numpy.ndarray
+            A numpy array of shape (vocab_size,k) with each column containing the word|topic distribution.
+        """
+
+        if self._ext is None:
+            self._ext = ldac.topic_matrix(self._this)
+        return self._ext
+
+    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
+	        pass
 
     def get_params(self) -> Params:
         """
