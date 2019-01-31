@@ -117,13 +117,14 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
         Compute k-means clustering
         """
         if self._fitted:
-            return
+            return base.CallResult(None)
 
         if self._training_inputs is None:
             raise ValueError("Missing training data.")
 
         kmeansc.fit(self._this, self._training_inputs, self._validation_inputs)
         self._fitted = True
+        return base.CallResult(None)
 
     def get_call_metadata(self) -> bool:
         """
