@@ -114,8 +114,8 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         
         self._fitted = False
 
-    
-    def fit(self) -> None:
+
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Inference on the Gaussian mixture model
         """
@@ -140,7 +140,7 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         """
         return self._fitted
         
-    def produce(self, *, inputs: Inputs) -> base.CallResult[Outputs]:
+    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
         """
         Finds the closest cluster for the given set of test points using the learned model.
 
