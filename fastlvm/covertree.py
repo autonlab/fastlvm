@@ -74,7 +74,7 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
         self._training_inputs = inputs.values
         self._fitted = False
         
-    def fit(self, *, timeout: float = None, iterations: int = None) -> None:
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Construct the tree
         """
@@ -86,6 +86,8 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
 
         self._this = covertreec.new(self._training_inputs, self._trunc)
         self._fitted = True
+
+        return base.CallResult(None)
  
     def get_call_metadata(self) -> bool:
         """
