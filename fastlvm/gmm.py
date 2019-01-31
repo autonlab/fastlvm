@@ -120,13 +120,14 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         Inference on the Gaussian mixture model
         """
         if self._fitted:
-            return
+            return base.CallResult(None)
 
         if self._training_inputs is None:
             raise ValueError("Missing training data.")
 
         gmmc.fit(self._this, self._training_inputs, self._validation_inputs)
         self._fitted = True
+        return base.CallResult(None)
 
     def get_call_metadata(self) -> bool:
         """
