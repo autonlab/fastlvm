@@ -39,7 +39,6 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         "keywords": ["large scale Gaussian LDA", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
-            "contact": "mailto:donghanw@cs.cmu.edu",
             "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
         },
         "installation": [

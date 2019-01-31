@@ -53,7 +53,6 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         "keywords": ["large scale Gaussian Mixture Models", "clustering"],
         "source": {
             "name": "CMU",
-            "contact": "mailto:donghanw@cs.cmu.edu",
             "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
         },
         "installation": [
