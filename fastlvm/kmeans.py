@@ -112,7 +112,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
         
         self._fitted = False
 
-    def fit(self) -> None:
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Compute k-means clustering
         """
@@ -137,7 +137,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
         """
         return self.fitted
 
-    def produce(self, *, inputs: Inputs) -> base.CallResult[Outputs]:
+    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
         """
         Finds the closest cluster for the given set of test points using the learned model.
 
