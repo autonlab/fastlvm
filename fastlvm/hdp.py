@@ -28,7 +28,14 @@ class HyperParams(hyperparams.Hyperparams):
 
 class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
     """
-    This class provides functionality for Hierarchical Dirichlet Process, which is a nonparametric Bayesian model for topic modelling on corpora of documents which seeks to represent the underlying thematic structure of the document collection. They have emerged as a powerful new technique of finding useful structure in an unstructured collection as it learns distributions over words. The high probability words in each distribution gives us a way of understanding the contents of the corpus at a very high level. In HDP, each document of the corpus is assumed to have a distribution over K topics, where the discrete topic distributions are drawn from a symmetric dirichlet distribution. As it is a nonparametric model, the number of topics K is inferred automatically. The API is similar to its parametric equivalent sklearn.decomposition.LatentDirichletAllocation. The class is pickle-able.
+    This class provides functionality for Hierarchical Dirichlet Process, which is a nonparametric Bayesian model for
+    topic modelling on corpora of documents which seeks to represent the underlying thematic structure of the
+    document collection. They have emerged as a powerful new technique of finding useful structure in an unstructured
+    collection as it learns distributions over words. The high probability words in each distribution gives us a way
+    of understanding the contents of the corpus at a very high level. In HDP, each document of the corpus is assumed
+    to have a distribution over K topics, where the discrete topic distributions are drawn from a symmetric dirichlet
+    distribution. As it is a nonparametric model, the number of topics K is inferred automatically. The API is
+    similar to its parametric equivalent sklearn.decomposition.LatentDirichletAllocation. The class is pickle-able.
     """
 
     __author__ = 'CMU'

@@ -40,6 +40,18 @@ def init_kmeanspp(k: int, points):
     
 
 class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
+    """
+    This class provides functionality for unsupervised clustering, which according to Wikipedia is 'the task of
+    grouping a set of objects in such a way that objects in the same group (called a cluster) are more similar to
+    each other than to those in other groups'. It is a main task of exploratory data mining, and a common technique
+    for statistical data analysis. The similarity measure can be, in general, any metric measure: standard Euclidean
+    distance is the most common choice and the one currently implemented. In future, adding other metrics should not
+    be too difficult. Standard packages, like those in scikit learn run on a single machine and often only on one
+    thread. Whereas our underlying C++ implementation can be distributed to run on multiple machines. To enable the
+    distribution through python interface is work in progress. In this class, we implement a K-Means clustering using
+    Llyod's algorithm and speed-up using Cover Trees. The API is similar to sklearn.cluster.KMeans. The class is
+    pickle-able.
+    """
     
     metadata = metadata_base.PrimitiveMetadata({
         "id": "66c3bb07-63f7-409e-9f0f-5b07fbf7cd8e",
