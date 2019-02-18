@@ -69,6 +69,7 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
          "keywords": ["cover trees", "fast nearest neighbor search"],
          "source": {
              "name": "CMU",
+             "contact": "mailto:donghanw@cs.cmu.edu",
              "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
          },
          "installation": [

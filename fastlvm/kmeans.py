@@ -64,6 +64,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
         "keywords": ["large scale K-Means", "clustering"],
         "source": {
             "name": "CMU",
+            "contact": "mailto:donghanw@cs.cmu.edu",
             "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
         },
         "installation": [

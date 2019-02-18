@@ -73,6 +73,7 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         "keywords": ["large scale HDP", "Bayesian Nonparametrics", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
+            "contact": "mailto:donghanw@cs.cmu.edu",
             "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
         },
         "installation": [
