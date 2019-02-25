@@ -198,7 +198,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         return self._ext
 
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
-        pass
+        return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations, inputs=inputs)
 
     def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, training_inputs: Inputs,
                           validation_inputs: Inputs, vectors: Predicts,
