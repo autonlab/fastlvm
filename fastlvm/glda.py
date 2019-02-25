@@ -124,6 +124,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         gldac.fit(self._this, self._training_inputs, self._validation_inputs)
         self._fitted = True
 
+        return base.CallResult(None)
+
     def get_call_metadata(self) -> bool:
         """
         Returns metadata about the last ``fit`` call if it succeeded
