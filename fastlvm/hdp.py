@@ -130,8 +130,7 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         
         self._fitted = False
 
-    
-    def fit(self) -> None:
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Inference on the hierarchical Dirichlet process model
         """
@@ -144,6 +143,8 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         hdpc.fit(self._this, self._training_inputs, self._validation_inputs)
         self._fitted = True
 
+        return base.CallResult(None)
+
     def get_call_metadata(self) -> bool:
         """
         Returns metadata about the last ``fit`` call if it succeeded
@@ -155,8 +156,8 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         """
         return self._fitted
-        
-    def produce(self, *, inputs: Inputs) -> base.CallResult[Outputs]:
+
+    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
         """
         Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs using the learned model.
 
