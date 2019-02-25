@@ -111,8 +111,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
         self._fitted = False
 
-
-    def fit(self) -> None:
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Inference on the Gaussian latent Dirichley allocation model
         """
