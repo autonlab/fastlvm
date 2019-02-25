@@ -138,7 +138,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         """
         return self._fitted
 
-    def produce(self, *, inputs: Inputs) -> base.CallResult[Outputs]:
+    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
         """
         Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs using the learned model.
 
