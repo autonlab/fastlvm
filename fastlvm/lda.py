@@ -108,8 +108,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         self._fitted = False
 
-
-    def fit(self) -> None:
+    def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Inference on the latent Dirichley allocation model
         """
@@ -121,6 +120,8 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         ldac.fit(self._this, self._training_inputs, self._validation_inputs)
         self._fitted = True
+
+        return base.CallResult(None)
 
     def get_call_metadata(self) -> bool:
         """
