@@ -9,7 +9,6 @@ class DLDA(object):
         self.ext = None
 
     def __del__(self):
-        print("Destructor called!")
         dldac.delete(self.this, self.ext)
         
     def __reduce__(self):
