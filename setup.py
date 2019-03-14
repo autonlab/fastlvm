@@ -73,7 +73,7 @@ utils_module = Extension('utilsc',
 )
 
 setup ( name = 'fastlvm',
-    version = '1.0',
+    version = '2.0',
     description = 'fastlvm -- fast search, clustering, and mixture modelling',
     keywords = 'd3m_primitive',
     cmdclass={'build_ext':build_ext},
@@ -82,12 +82,12 @@ setup ( name = 'fastlvm',
     packages = ['fastlvm'],
     entry_points = {
         'd3m.primitives': [
-            'cmu.fastlvm.CoverTree = fastlvm:CoverTree',
-            'cmu.fastlvm.KMeans = fastlvm:KMeans',
-            'cmu.fastlvm.GMM = fastlvm:GMM',
-            'cmu.fastlvm.LDA = fastlvm:LDA',
-            'cmu.fastlvm.GLDA = fastlvm:GLDA',
-            'cmu.fastlvm.HDP = fastlvm:HDP',
+            'clustering.cover_tree.Fastlvm = fastlvm:CoverTree',
+            'clustering.k_means.Fastlvm = fastlvm:KMeans',
+            'clustering.gmm.Fastlvm = fastlvm:GMM',
+            'natural_language_processing.lda.Fastlvm = fastlvm:LDA',
+            'natural_language_processing.glda.Fastlvm = fastlvm:GLDA',
+            'natural_language_processing.hdp.Fastlvm = fastlvm:HDP',
         ],
     },
 )

@@ -64,17 +64,17 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "e582e738-2f7d-4b5d-964f-022d15f19018",
-        "version": "1.0",
+        "version": "2.0",
         "name": "Hierarchical Dirichlet Process Topic Modelling",
         "description": "This class provides functionality for Hierarchical Dirichlet Process, which is a nonparametric Bayesian model for topic modelling on corpora of documents which seeks to represent the underlying thematic structure of the document collection. They have emerged as a powerful new technique of finding useful structure in an unstructured collection as it learns distributions over words. The high probability words in each distribution gives us a way of understanding the contents of the corpus at a very high level. In HDP, each document of the corpus is assumed to have a distribution over K topics, where the discrete topic distributions are drawn from a symmetric dirichlet distribution. As it is a nonparametric model, the number of topics K is inferred automatically. The API is similar to its parametric equivalent sklearn.decomposition.LatentDirichletAllocation. The class is pickle-able.",
-        "python_path": "d3m.primitives.cmu.fastlvm.HDP",
-        "primitive_family": metadata_base.PrimitiveFamily.CLUSTERING,
+        "python_path": "d3m.primitives.natural_language_processing.hdp.Fastlvm",
+        "primitive_family": metadata_base.PrimitiveFamily.NATURAL_LANGUAGE_PROCESSING,
         "algorithm_types": [ "LATENT_DIRICHLET_ALLOCATION" ],
         "keywords": ["large scale HDP", "Bayesian Nonparametrics", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
             "contact": "mailto:donghanw@cs.cmu.edu",
-            "uris": [ "https://gitlab.datadrivendiscovery.org/cmu/fastlvm" ]
+            "uris": ["https://gitlab.datadrivendiscovery.org/cmu/fastlvm", "https://github.com/autonlab/fastlvm"]
         },
         "installation": [
         {
