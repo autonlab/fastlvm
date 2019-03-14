@@ -1,6 +1,6 @@
 ## v2.0.0
 ### Enhancements
-* Changed the primitive namespace
+* Changed the primitive namespace per [Issue #3](https://gitlab.com/datadrivendiscovery/d3m/issues/3)
     * `d3m.primitives.cmu.fastlvm.CoverTree` -> `d3m.primitives* .clustering.cover_tree.Fastlvm`
     * `d3m.primitives.cmu.fastlvm.KMeans` -> `d3m.primitives.clustering* .k_means.Fastlvm`
     * `d3m.primitives.cmu.fastlvm.GMM` -> `d3m.primitives.clustering.gmm* .Fastlvm`
