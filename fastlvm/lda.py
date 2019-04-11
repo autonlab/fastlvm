@@ -1,8 +1,9 @@
 import ldac
 
 import numpy as np
-import pdb
-import typing, os, sys
+import typing
+import os
+from sklearn.feature_extraction.text import CountVectorizer
 
 from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 from d3m.primitive_interfaces import base
@@ -11,10 +12,11 @@ import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
 
-Inputs = container.List  # type: list of np.ndarray
-Outputs = container.List  # type: list of np.ndarray
+from fastlvm.utils import get_documents, tpd, tokenize, split_inputs
+
+Inputs = container.DataFrame
+Outputs = container.DataFrame
 Predicts = container.ndarray  # type: np.ndarray
-VocabularyInputs = container.DataFrame  # DataFrame: one column, one word per row
 
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
@@ -23,6 +25,7 @@ class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
     num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
+    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The fraction of training data set aside as the validation. 0 = use all training as validation')
     seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
 
 
@@ -42,7 +45,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "f410b951-1cb6-481c-8d95-2d97b31d411d",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "name": "Latent Dirichlet Allocation Topic Modelling",
         "description": "This class provides functionality for unsupervised inference on latent Dirichlet allocation, which is a probabilistic topic model of corpora of documents which seeks to represent the underlying thematic structure of the document collection. They have emerged as a powerful new technique of finding useful structure in an unstructured collection as it learns distributions over words. The high probability words in each distribution gives us a way of understanding the contents of the corpus at a very high level. In LDA, each document of the corpus is assumed to have a distribution over K topics, where the discrete topic distributions are drawn from a symmetric dirichlet distribution. Standard packages, like those in scikit learn are inefficient in addition to being limited to a single machine. Whereas our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. The API is similar to sklearn.decomposition.LatentDirichletAllocation.",
         "python_path": "d3m.primitives.natural_language_processing.lda.Fastlvm",
@@ -72,11 +75,13 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._iters = hyperparams['iters']
         self._num_top = hyperparams['num_top']
         self._seed = hyperparams['seed']
+        self._frac = hyperparams['frac']  # the fraction of training data set aside as the validation
 
         self._training_inputs = None  # type: Inputs
-        self._validation_inputs = None # type: Inputs
         self._fitted = False
         self._ext = None
+        self._vectorizer = None  # for tokenization
+        self._analyze = None  # to tokenize raw documents
 
         self.hyperparams = hyperparams
 
@@ -85,26 +90,17 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         if self._this is not None:
             ldac.delete(self._this, self._ext)
 
-    def set_training_data(self, *, training_inputs: Inputs, validation_inputs: Inputs, vocabulary:VocabularyInputs) -> None:
+    def set_training_data(self, *, inputs: Inputs) -> None:
         """
         Sets training data for LDA.
 
         Parameters
         ----------
-        training_inputs : Inputs
+        inputs : Inputs
             A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id.
-        validation_inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id. This represents validation docs to validate the results learned after each iteration of canopy algorithm.
-        vocabulary : VocabularyInputs
-            An one-column DataFrame. Each row contains a word.
         """
 
-        self._training_inputs = training_inputs
-        self._validation_inputs = validation_inputs
-
-        vocab_size = len(vocabulary.index)
-        vocab = [''.join(['w',str(i)]) for i in range(vocab_size)]
-        self._this = ldac.new(self._k, self._iters, vocab)
+        self._training_inputs = inputs
 
         self._fitted = False
 
@@ -118,7 +114,28 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         if self._training_inputs is None:
             raise ValueError("Missing training data.")
 
-        ldac.fit(self._this, self._training_inputs, self._validation_inputs)
+        # Create documents from the data-frame
+        raw_documents = get_documents(self._training_inputs)
+
+        # Extract the vocabulary from the inputs data-frame
+        self._vectorizer = CountVectorizer()
+        self._vectorizer.fit(raw_documents)
+        vocab_size = len(self._vectorizer.vocabulary_)
+
+        # Build analyzer that handles tokenization
+        self._analyze = self._vectorizer.build_analyzer()
+
+        vocab = ['w' + str(i) for i in range(vocab_size)]
+        self._this = ldac.new(self._k, self._iters, vocab)
+
+        # Tokenize documents
+        tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
+
+        # Uniformly split the data to training and validation
+        training, validation = split_inputs(tokenized, self._frac)
+
+        ldac.fit(self._this, training.tolist(), validation.tolist())
+
         self._fitted = True
 
         return base.CallResult(None)
@@ -147,10 +164,17 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         Returns
         -------
         Outputs
-            A list of 1d numpy array which represents index of the topic each token belongs to.
+            A list of 1d numpy array which represents probability of the topic each document belongs to.
 
         """
-        return base.CallResult(ldac.predict(self._this, inputs))
+        raw_documents = get_documents(inputs)
+        tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
+        predicted = ldac.predict(self._this, tokenized.tolist())  # per word topic assignment
+        features = tpd(predicted, self._k)
+
+        features = container.DataFrame(features, generate_metadata=True)
+
+        return base.CallResult(features)
 
     def evaluate(self, *, inputs: Inputs) -> float:
         """
@@ -197,14 +221,6 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
         return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations, inputs=inputs)
 
-    def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, training_inputs: Inputs,
-                          validation_inputs: Inputs, vocabulary: VocabularyInputs,
-                          timeout: float = None, iterations: int = None) -> base.MultiCallResult:  # type: ignore
-        return self._fit_multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
-                                       inputs=inputs,
-                                       training_inputs=training_inputs, validation_inputs=validation_inputs,
-                                       vocabulary=vocabulary)
-
     def get_params(self) -> Params:
         """
         Get parameters of LDA.
@@ -246,4 +262,3 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         """
 
         raise NotImplementedError("Not supported yet")
-
