@@ -46,7 +46,7 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
          "installation": [
          {
              "type": "PIP",
-             "package_uri": 'git+https://gitlab.datadrivendiscovery.org/cmu/fastlvm.git@{git_commit}#egg=fastlvm'.format(
+             "package_uri": 'git+https://github.com/autonlab/fastlvm/fastlvm.git@{git_commit}#egg=fastlvm'.format(
                                                         git_commit=utils.current_git_commit(os.path.dirname(__file__)))
          }
          ]
