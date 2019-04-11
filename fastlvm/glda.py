@@ -25,6 +25,26 @@ class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
     num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
+    w2v_size = hyperparams.Hyperparameter[int](
+        default=30,
+        description="Dimensionality of the feature vectors.",
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter']
+    )
+    w2v_window = hyperparams.Hyperparameter[int](
+        default=5,
+        description="The maximum distance between the current and predicted word within a sentence.",
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter']
+    )
+    w2v_min_count = hyperparams.Hyperparameter[int](
+        default=1,
+        description="The mininmum count",
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter']
+    )
+    w2v_iters = hyperparams.Hyperparameter[int](
+        default=30,
+        description='Number of iterations (epochs) over the corpus.',
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter']
+    )
     frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The fraction of training data set aside as the validation. 0 = use all training as validation')
     seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
 
@@ -88,6 +108,10 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._vectorizer = None  # for tokenization
         self._analyze = None  # to tokenize raw documents
 
+        self._w2v_size = hyperparams['w2v_size']
+        self._w2v_window = hyperparams['w2v_window']
+        self._w2v_min_count = hyperparams['w2v_min_count']
+        self._w2v_iters = hyperparams['w2v_iters']
         self.hyperparams = hyperparams
 
 
@@ -132,13 +156,13 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._analyze = self._vectorizer.build_analyzer()
 
         # Represent the documents in w2v
-        size = 30  # TODO hyperparameters
+        size = self._w2v_size
         word_list = []
         for doc in raw_documents:
             # Consider using self._analyze
             words = doc.split()
             word_list.append(words)
-        w2v = Word2Vec(word_list, size=size, window=5, min_count=1, iter=30)  # TODO use hyperparameters
+        w2v = Word2Vec(word_list, size=size, window=self._w2v_window, min_count=self._w2v_min_count, iter=self._w2v_iters)
 
         # Create the vocabulary using word2vec
         wv = np.zeros((vocab_size, size))
