@@ -54,7 +54,7 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "49af9397-d9a2-450f-93eb-c3b631ba6646",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "name": "Gaussian Mixture Models",
         "description": "This class provides functionality for unsupervised inference on Gaussian mixture model, which is a probabilistic model that assumes all the data points are generated from a mixture of a finite number of Gaussian distributions with unknown parameters. It can be viewed as a generalization of the K-Means clustering to incorporate information about the covariance structure of the data. Standard packages, like those in scikit learn run on a single machine and often only on one thread. Whereas our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. In this class, we implement inference on (Bayesian) Gaussian mixture models using Canopy algorithm. The API is similar to sklearn.mixture.GaussianMixture. The class is pickle-able.",
         "python_path": "d3m.primitives.clustering.gmm.Fastlvm",
@@ -167,7 +167,7 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         """
         results = gmmc.predict(self._this, inputs.values)
-        output = container.DataFrame(results, generate_metadata=False, source=self)
+        output = container.DataFrame(results, generate_metadata=True, source=self)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
 
         return base.CallResult(output)

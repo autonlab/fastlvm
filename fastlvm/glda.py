@@ -1,19 +1,21 @@
 import gldac
 
 import numpy as np
-import pdb
-import typing, os, sys
+import typing
+import os
+from sklearn.feature_extraction.text import CountVectorizer
 
 from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 from d3m.primitive_interfaces import base
 from d3m import container, utils
-import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
 
+from gensim.models import Word2Vec
+from fastlvm.utils import get_documents, tpd, tokenize, split_inputs
 
-Inputs = container.List  # type: list of np.ndarray
-Outputs = container.List  # type: list of np.ndarray
+Inputs = container.DataFrame
+Outputs = container.DataFrame
 Predicts = container.ndarray  # type: np.ndarray
 
 class Params(params.Params):
@@ -23,6 +25,7 @@ class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
     num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
+    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The fraction of training data set aside as the validation. 0 = use all training as validation')
     seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
 
 
@@ -45,7 +48,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "a3d490a4-ef39-4de1-be02-4c43726b3b24",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "name": "Gaussian Latent Dirichlet Allocation Topic Modelling",
         "description": "This class provides functionality for unsupervised inference on Gaussian latent Dirichlet allocation, which replace LDA's parameterization of 'topics' as categorical distributions over opaque word types with multivariate Gaussian distributions on the embedding space. This encourages the model to group words that are a priori known to be semantically related into topics, as continuous space word embeddings learned from large, unstructured corpora have been shown to be effective at capturing semantic regularities in language. Using vectors learned from a domain-general corpus (e.g. English Wikipedia), qualitatively, Gaussian LDA infers different (but still very sensible) topics relative to standard LDA. Quantitatively, the technique outperforms existing models at dealing with OOV words in held-out documents. No standard packages exists. Our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. In this class, we implement inference on Gaussian latent Dirichlet Allocation using Canopy algorithm. In case of full covariance matrices, it exploits the Cholesky decompositions of covariance matrices of the posterior predictive distributions and performs efficient rank-one updates. The API is similar to sklearn.decomposition.LatentDirichletAllocation.",
         "python_path": "d3m.primitives.natural_language_processing.glda.Fastlvm",
@@ -75,12 +78,15 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
         self._num_top = hyperparams['num_top']
+        self._frac = hyperparams['frac']  # the fraction of training data set aside as the validation
         self._seed = hyperparams['seed']
 
         self._training_inputs = None  # type: Inputs
         self._validation_inputs = None # type: Inputs
         self._fitted = False
         self._ext = None
+        self._vectorizer = None  # for tokenization
+        self._analyze = None  # to tokenize raw documents
 
         self.hyperparams = hyperparams
 
@@ -89,25 +95,17 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         if self._this is not None:
             gldac.delete(self._this, self._ext)
 
-    def set_training_data(self, *, training_inputs: Inputs, validation_inputs: Inputs, vectors: Predicts) -> None:
+    def set_training_data(self, *, inputs: Inputs) -> None:
         """
         Sets training data for GLDA.
 
         Parameters
         ----------
-        training_inputs : Inputs
+        inputs : Inputs
             A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id.
-        validation_inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id. This represents validation docs to validate the results learned after each iteration of canopy algorithm.
-        vectors : Predicts
-           A contiguous numpy array of shape (vocab_size, dim) containing the continuous word embeddings. The order of the vectors should match the order of words in the vocab.
         """
 
-        self._training_inputs = training_inputs
-        self._validation_inputs = validation_inputs
-
-        vocab = [''.join(['w',str(i)]) for i in range(len(vectors))]
-        self._this = gldac.new(self._k, self._iters, vocab, vectors)
+        self._training_inputs = inputs
 
         self._fitted = False
 
@@ -121,7 +119,44 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         if self._training_inputs is None:
             raise ValueError("Missing training data.")
 
-        gldac.fit(self._this, self._training_inputs, self._validation_inputs)
+        # Create documents from the data-frame
+        raw_documents = get_documents(self._training_inputs)
+
+        # Extract the vocabulary from the inputs data-frame
+        self._vectorizer = CountVectorizer()
+        self._vectorizer.fit(raw_documents)
+        vocab_size = len(self._vectorizer.vocabulary_)
+        vocab = ['w' + str(i) for i in range(vocab_size)]
+
+        # Build analyzer that handles tokenization
+        self._analyze = self._vectorizer.build_analyzer()
+
+        # Represent the documents in w2v
+        size = 30  # TODO hyperparameters
+        word_list = []
+        for doc in raw_documents:
+            # Consider using self._analyze
+            words = doc.split()
+            word_list.append(words)
+        w2v = Word2Vec(word_list, size=size, window=5, min_count=1, iter=30)  # TODO use hyperparameters
+
+        # Create the vocabulary using word2vec
+        wv = np.zeros((vocab_size, size))
+        for w, i in self._vectorizer.vocabulary_.items():
+            if w in w2v.wv:
+                wv[i] = w2v.wv[w]
+            else:
+                wv[i] = 2 * np.random.randn(size)
+
+        # Tokenize documents
+        tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
+
+        # Uniformly split the data to training and validation
+        training, validation = split_inputs(tokenized, self._frac)
+
+        self._this = gldac.new(self._k, self._iters, vocab, wv)
+        gldac.fit(self._this, training.tolist(), validation.tolist())
+
         self._fitted = True
 
         return base.CallResult(None)
@@ -153,7 +188,14 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             A list of 1d numpy array which represents index of the topic each token belongs to.
 
         """
-        return base.CallResult(gldac.predict(self._this, inputs))
+        raw_documents = get_documents(inputs)
+        tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
+        predicted = gldac.predict(self._this, tokenized.tolist())  # per word topic assignment
+        features = tpd(predicted, self._k)
+
+        features = container.DataFrame(features, generate_metadata=True)
+
+        return base.CallResult(features)
 
     def evaluate(self, *, inputs: Inputs) -> float:
         """
@@ -199,14 +241,6 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
     def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
         return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations, inputs=inputs)
-
-    def fit_multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, training_inputs: Inputs,
-                          validation_inputs: Inputs, vectors: Predicts,
-                          timeout: float = None, iterations: int = None) -> base.MultiCallResult:  # type: ignore
-        return self._fit_multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
-                                       inputs=inputs,
-                                       training_inputs=training_inputs, validation_inputs=validation_inputs,
-                                       vectors=vectors)
 
     def get_params(self) -> Params:
         """

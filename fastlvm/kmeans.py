@@ -21,7 +21,7 @@ class Params(params.Params):
 class HyperParams(hyperparams.Hyperparams):
     k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of the Lloyd’s algorithm for K-Means clustering.')
-    initialization = hyperparams.Enumeration[str](values=['random', 'firstk', 'kmeanspp', 'covertree'], default='covertree', semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description="'random': choose k observations (rows) at random from data for the initial centroids. 'kmeanspp' : selects initial cluster centers by finding well spread out points using cover trees to speed up convergence. 'covertree' : selects initial cluster centers by sampling to speed up convergence.")
+    initialization = hyperparams.Enumeration[str](values=['random', 'firstk', 'kmeanspp', 'covertree'], default='kmeanspp', semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description="'random': choose k observations (rows) at random from data for the initial centroids. 'kmeanspp' : selects initial cluster centers by finding well spread out points using cover trees to speed up convergence. 'covertree' : selects initial cluster centers by sampling to speed up convergence.")
     
 def init_covertree(k: int, points):
     import covertreec
@@ -55,7 +55,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
     
     metadata = metadata_base.PrimitiveMetadata({
         "id": "66c3bb07-63f7-409e-9f0f-5b07fbf7cd8e",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "name": "K-means Clustering",
         "description": "This class provides functionality for unsupervised clustering, which according to Wikipedia is 'the task of grouping a set of objects in such a way that objects in the same group (called a cluster) are more similar to each other than to those in other groups'. It is a main task of exploratory data mining, and a common technique for statistical data analysis. The similarity measure can be, in general, any metric measure: standard Euclidean distance is the most common choice and the one currently implemented. In future, adding other metrics should not be too difficult. Standard packages, like those in scikit learn run on a single machine and often only on one thread. Whereas our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. In this class, we implement a K-Means clustering using Llyod's algorithm and speed-up using Cover Trees. The API is similar to sklearn.cluster.KMeans. The class is pickle-able.",
         "python_path": "d3m.primitives.clustering.k_means.Fastlvm",
@@ -167,7 +167,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
 
         """
         results = kmeansc.predict(self._this, inputs.values)
-        output = container.DataFrame(results, generate_metadata=False, source=self)
+        output = container.DataFrame(results, generate_metadata=True, source=self)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
 
         return base.CallResult(output)

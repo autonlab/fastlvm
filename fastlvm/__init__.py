@@ -1,4 +1,6 @@
 from .covertree import CoverTree
+from .covertree_classifier import CoverTreeClassifier
+from .covertree_regressor import CoverTreeRegressor
 from .kmeans import KMeans
 from .gmm import GMM
 from .lda import LDA

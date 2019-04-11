@@ -1,3 +1,10 @@
+## v3.0.0
+* Two new primitives
+    * `d3m.primitives.regression.cover_tree.Fastlvm`
+    * `d3m.primitives.classification.cover_tree.Fastlvm`
+* Removed a primitive
+    * `d3m.primitives.clustering.cover_tree.Fastlvm`
+
 ## v2.0.0
 ### Enhancements
 * Changed the primitive namespace per [Issue #3](https://gitlab.com/datadrivendiscovery/d3m/issues/3)
