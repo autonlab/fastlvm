@@ -167,7 +167,7 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         """
         results = gmmc.predict(self._this, inputs.values)
-        output = container.DataFrame(results, generate_metadata=True, source=self)
+        output = container.DataFrame(results, generate_metadata=True)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
 
         return base.CallResult(output)
