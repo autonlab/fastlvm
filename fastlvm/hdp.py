@@ -1,16 +1,15 @@
+import os
+import typing
+
 import hdpc
-
 import numpy as np
-import pdb
-import typing, os, sys
-from sklearn.feature_extraction.text import CountVectorizer
-
-from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
-from d3m.primitive_interfaces import base
 from d3m import container, utils
-import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
+from d3m.primitive_interfaces import base
+from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
+from sklearn.feature_extraction.text import CountVectorizer
+
 from fastlvm.utils import get_documents, tpd, tokenize, split_inputs
 
 Inputs = container.DataFrame

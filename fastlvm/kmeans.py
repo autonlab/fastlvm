@@ -1,15 +1,12 @@
+import os
+
 import kmeansc
-
 import numpy as np
-import pdb
-import typing, os, sys
-
-from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
-from d3m.primitive_interfaces import base
 from d3m import container, utils
-import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
+from d3m.primitive_interfaces import base
+from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 
 Inputs = container.DataFrame  # type: DataFrame
 Outputs = container.DataFrame  # type: DataFrame

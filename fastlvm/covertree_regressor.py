@@ -1,16 +1,12 @@
+import os
+
 import covertreec
-
 import numpy as np
-import pdb
-import typing, sys, os
-
-from d3m.primitive_interfaces.supervised_learning import SupervisedLearnerPrimitiveBase
-from d3m.primitive_interfaces import base
 from d3m import container, utils
-import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
-from scipy import stats
+from d3m.primitive_interfaces import base
+from d3m.primitive_interfaces.supervised_learning import SupervisedLearnerPrimitiveBase
 
 Inputs = container.DataFrame  # type: DataFrame
 Outputs = container.DataFrame  # type: DataFrame
