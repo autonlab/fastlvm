@@ -12,16 +12,21 @@ from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
 from scipy import stats
 
-
 Inputs = container.DataFrame  # type: DataFrame
 Outputs = container.DataFrame  # type: DataFrame
 
+
 class Params(params.Params):
-    tree: bytes # Byte stream represening the tree.
+    tree: bytes  # Byte stream represening the tree.
+
 
 class HyperParams(hyperparams.Hyperparams):
-    trunc = hyperparams.UniformInt(lower=-1, upper=100,default=-1,semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],description='Level of truncation of the tree. -1 means no truncation.')
-    k = hyperparams.UniformInt(lower=1, upper=100, default=3,semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],description='Number of neighbors.')
+    trunc = hyperparams.UniformInt(lower=-1, upper=100, default=-1,
+                                   semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                   description='Level of truncation of the tree. -1 means no truncation.')
+    k = hyperparams.UniformInt(lower=1, upper=100, default=3,
+                               semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                               description='Number of neighbors.')
 
 
 class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
@@ -30,31 +35,31 @@ class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,
     """
 
     metadata = metadata_base.PrimitiveMetadata({
-         "id": "92360c43-6e6f-4ff3-b1e6-5851792d8fcc",
-         "version": "3.0.0",
-         "name": "Nearest Neighbor Regressor with Cover Trees",
-         "description": "Regressor based on the k-nearest neighbors search using Cover Trees..",
-         "python_path": "d3m.primitives.regression.cover_tree.Fastlvm",
-         "primitive_family": metadata_base.PrimitiveFamily.REGRESSION,
-         "algorithm_types": [ "K_NEAREST_NEIGHBORS" ],
-         "keywords": ["regression", "cover trees", "fast nearest neighbor search"],
-         "source": {
-             "name": "CMU",
-             "contact": "mailto:donghanw@cs.cmu.edu",
-             "uris": ["https://gitlab.datadrivendiscovery.org/cmu/fastlvm", "https://github.com/autonlab/fastlvm"]
-         },
-         "installation": [
-         {
-             "type": "PIP",
-             "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
-                                                        git_commit=utils.current_git_commit(os.path.dirname(__file__)))
-         }
-         ]
-     })
+        "id": "92360c43-6e6f-4ff3-b1e6-5851792d8fcc",
+        "version": "3.0.0",
+        "name": "Nearest Neighbor Regressor with Cover Trees",
+        "description": "Regressor based on the k-nearest neighbors search using Cover Trees..",
+        "python_path": "d3m.primitives.regression.cover_tree.Fastlvm",
+        "primitive_family": metadata_base.PrimitiveFamily.REGRESSION,
+        "algorithm_types": ["K_NEAREST_NEIGHBORS"],
+        "keywords": ["regression", "cover trees", "fast nearest neighbor search"],
+        "source": {
+            "name": "CMU",
+            "contact": "mailto:donghanw@cs.cmu.edu",
+            "uris": ["https://gitlab.datadrivendiscovery.org/cmu/fastlvm", "https://github.com/autonlab/fastlvm"]
+        },
+        "installation": [
+            {
+                "type": "PIP",
+                "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
+                    git_commit=utils.current_git_commit(os.path.dirname(__file__)))
+            }
+        ]
+    })
 
     def __init__(self, *, hyperparams: HyperParams) -> None:
-        super().__init__(hyperparams = hyperparams)
-        #super(CoverTree, self).__init__()
+        super().__init__(hyperparams=hyperparams)
+        # super(CoverTree, self).__init__()
         self._this = None
         self._trunc = hyperparams['trunc']
         self._k = hyperparams['k']
@@ -65,8 +70,8 @@ class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,
 
     def __del__(self):
         if self._this is not None:
-             covertreec.delete(self._this)
-     
+            covertreec.delete(self._this)
+
     def set_training_data(self, *, inputs: Inputs, outputs: Outputs) -> None:
         """
         Sets training data for CoverTree.
@@ -81,7 +86,7 @@ class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,
         self._training_inputs = inputs.values
         self._training_outputs = outputs.values
         self._fitted = False
-        
+
     def fit(self, *, timeout: float = None, iterations: int = None) -> base.CallResult[None]:
         """
         Construct the tree
@@ -96,7 +101,7 @@ class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,
         self._fitted = True
 
         return base.CallResult(None)
- 
+
     def get_call_metadata(self) -> bool:
         """
         Returns metadata about the last ``fit`` call if it succeeded
@@ -201,4 +206,3 @@ OB
             A named tuple of parameters.
         """
         self._this = covertreec.deserialize(params['tree'])
-

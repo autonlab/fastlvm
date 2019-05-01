@@ -6,25 +6,32 @@ from d3m.metadata import base as metadata_base
 
 _stirling = utilsc.new_stirling()
 
+
 def read_corpus(fname, vocab=[], stopwords=[]):
     return utilsc.read_corpus(fname, vocab, stopwords)
-    
+
+
 def get_ref_count(var):
     return utilsc.ref_count(var)
+
 
 def kmeanspp(k, points):
     seed_idx = utilsc.kmeanspp(k, points)
     seeds = points[seed_idx]
     return seeds
 
+
 def log_stirling_num(n, m):
     return utilsc.log_stirling_num(_stirling, n, m)
+
 
 def uratio(n, m):
     return utilsc.uratio(_stirling, n, m)
 
+
 def vratio(n, m):
     return utilsc.vratio(_stirling, n, m)
+
 
 def wratio(n, m):
     return utilsc.wratio(_stirling, n, m)
@@ -32,8 +39,8 @@ def wratio(n, m):
 
 # Copied from common_primitives.utils
 def list_columns_with_semantic_types(metadata: metadata_base.DataMetadata,
-                                      semantic_types: typing.Sequence[str], *,
-                                      at: metadata_base.Selector = ()) -> typing.Sequence[int]:
+                                     semantic_types: typing.Sequence[str], *,
+                                     at: metadata_base.Selector = ()) -> typing.Sequence[int]:
     """
     This is similar to ``get_columns_with_semantic_type``, but it returns all column indices
     for a dimension instead of ``ALL_ELEMENTS`` element.
@@ -45,11 +52,13 @@ def list_columns_with_semantic_types(metadata: metadata_base.DataMetadata,
     columns = []
 
     for element in metadata.get_elements(list(at) + [metadata_base.ALL_ELEMENTS]):
-        metadata_semantic_types = metadata.query(list(at) + [metadata_base.ALL_ELEMENTS, element]).get('semantic_types', ())
+        metadata_semantic_types = metadata.query(list(at) + [metadata_base.ALL_ELEMENTS, element]).get('semantic_types',
+                                                                                                       ())
         # TODO: Should we handle inheritance between semantic types here?
         if any(semantic_type in metadata_semantic_types for semantic_type in semantic_types):
             if element is metadata_base.ALL_ELEMENTS:
-                return list(range(metadata.query(list(at) + [metadata_base.ALL_ELEMENTS]).get('dimension', {}).get('length', 0)))
+                return list(range(
+                    metadata.query(list(at) + [metadata_base.ALL_ELEMENTS]).get('dimension', {}).get('length', 0)))
             else:
                 columns.append(typing.cast(int, element))
 
@@ -67,7 +76,7 @@ def split_inputs(tokenized, frac):
     if num_training == len(tokenized):  # self._frac == 0
         validation = training
     else:
-        validation = tokenized[permutation[(num_training+1):]]
+        validation = tokenized[permutation[(num_training + 1):]]
     return training, validation
 
 
@@ -148,4 +157,3 @@ def tpd(zs, k):
         if len(doc) > 0:
             tpdm[i] /= len(doc)
     return tpdm
-

@@ -18,13 +18,22 @@ Inputs = container.DataFrame
 Outputs = container.DataFrame
 Predicts = container.ndarray  # type: np.ndarray
 
+
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
 
+
 class HyperParams(hyperparams.Hyperparams):
-    k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
-    iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
-    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
+    k = hyperparams.UniformInt(lower=1, upper=10000, default=10,
+                               semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                               description='The number of clusters to form as well as the number of centroids to '
+                                           'generate.')
+    iters = hyperparams.UniformInt(lower=1, upper=10000, default=100,
+                                   semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                   description='The number of iterations of inference.')
+    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1,
+                                     semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                     description='The number of top words requested')
     w2v_size = hyperparams.Hyperparameter[int](
         default=30,
         description="Dimensionality of the feature vectors.",
@@ -45,8 +54,13 @@ class HyperParams(hyperparams.Hyperparams):
         description='Number of iterations (epochs) over the corpus.',
         semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter']
     )
-    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The fraction of training data set aside as the validation. 0 = use all training as validation')
-    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
+    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False,
+                               semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                               description='The fraction of training data set aside as the validation. 0 = use all '
+                                           'training as validation')
+    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1,
+                                  semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                  description='A random seed to use')
 
 
 class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
@@ -70,10 +84,24 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         "id": "a3d490a4-ef39-4de1-be02-4c43726b3b24",
         "version": "3.0.0",
         "name": "Gaussian Latent Dirichlet Allocation Topic Modelling",
-        "description": "This class provides functionality for unsupervised inference on Gaussian latent Dirichlet allocation, which replace LDA's parameterization of 'topics' as categorical distributions over opaque word types with multivariate Gaussian distributions on the embedding space. This encourages the model to group words that are a priori known to be semantically related into topics, as continuous space word embeddings learned from large, unstructured corpora have been shown to be effective at capturing semantic regularities in language. Using vectors learned from a domain-general corpus (e.g. English Wikipedia), qualitatively, Gaussian LDA infers different (but still very sensible) topics relative to standard LDA. Quantitatively, the technique outperforms existing models at dealing with OOV words in held-out documents. No standard packages exists. Our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. In this class, we implement inference on Gaussian latent Dirichlet Allocation using Canopy algorithm. In case of full covariance matrices, it exploits the Cholesky decompositions of covariance matrices of the posterior predictive distributions and performs efficient rank-one updates. The API is similar to sklearn.decomposition.LatentDirichletAllocation.",
+        "description": "This class provides functionality for unsupervised inference on Gaussian latent Dirichlet "
+                       "allocation, which replace LDA's parameterization of 'topics' as categorical distributions "
+                       "over opaque word types with multivariate Gaussian distributions on the embedding space. This "
+                       "encourages the model to group words that are a priori known to be semantically related into "
+                       "topics, as continuous space word embeddings learned from large, unstructured corpora have "
+                       "been shown to be effective at capturing semantic regularities in language. Using vectors "
+                       "learned from a domain-general corpus (e.g. English Wikipedia), qualitatively, Gaussian LDA "
+                       "infers different (but still very sensible) topics relative to standard LDA. Quantitatively, "
+                       "the technique outperforms existing models at dealing with OOV words in held-out documents. No "
+                       "standard packages exists. Our underlying C++ implementation can be distributed to run on "
+                       "multiple machines. To enable the distribution through python interface is work in progress. "
+                       "In this class, we implement inference on Gaussian latent Dirichlet Allocation using Canopy "
+                       "algorithm. In case of full covariance matrices, it exploits the Cholesky decompositions of "
+                       "covariance matrices of the posterior predictive distributions and performs efficient rank-one "
+                       "updates. The API is similar to sklearn.decomposition.LatentDirichletAllocation.",
         "python_path": "d3m.primitives.natural_language_processing.glda.Fastlvm",
         "primitive_family": metadata_base.PrimitiveFamily.NATURAL_LANGUAGE_PROCESSING,
-        "algorithm_types": [ "LATENT_DIRICHLET_ALLOCATION" ],
+        "algorithm_types": ["LATENT_DIRICHLET_ALLOCATION"],
         "keywords": ["large scale Gaussian LDA", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
@@ -81,19 +109,18 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             "uris": ["https://gitlab.datadrivendiscovery.org/cmu/fastlvm", "https://github.com/autonlab/fastlvm"]
         },
         "installation": [
-        {
-            "type": "PIP",
-            "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
-                                          git_commit=utils.current_git_commit(os.path.dirname(__file__)))
+            {
+                "type": "PIP",
+                "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
+                    git_commit=utils.current_git_commit(os.path.dirname(__file__)))
 
-        }
+            }
         ]
     })
 
-
     def __init__(self, *, hyperparams: HyperParams) -> None:
-        #super(GLDA, self).__init__()
-        super().__init__(hyperparams = hyperparams)
+        # super(GLDA, self).__init__()
+        super().__init__(hyperparams=hyperparams)
         self._this = None
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
@@ -102,7 +129,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._seed = hyperparams['seed']
 
         self._training_inputs = None  # type: Inputs
-        self._validation_inputs = None # type: Inputs
+        self._validation_inputs = None  # type: Inputs
         self._fitted = False
         self._ext = None
         self._vectorizer = None  # for tokenization
@@ -113,7 +140,6 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._w2v_min_count = hyperparams['w2v_min_count']
         self._w2v_iters = hyperparams['w2v_iters']
         self.hyperparams = hyperparams
-
 
     def __del__(self):
         if self._this is not None:
@@ -164,12 +190,14 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
     def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
         """
-        Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs using the learned model.
+        Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs
+        using the learned model.
 
         Parameters
         ----------
         inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id.
+            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to
+            its word id.
 
         Returns
         -------
@@ -200,7 +228,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             # Consider using self._analyze
             words = doc.split()
             word_list.append(words)
-        w2v = Word2Vec(word_list, size=size, window=self._w2v_window, min_count=self._w2v_min_count, iter=self._w2v_iters)
+        w2v = Word2Vec(word_list, size=size, window=self._w2v_window, min_count=self._w2v_min_count,
+                       iter=self._w2v_iters)
 
         # Create the vocabulary using word2vec
         wv = np.zeros((vocab_size, size))
@@ -239,7 +268,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         Parameters
         ----------
         inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id. This represents test docs to test the learned model.
+            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to
+            its word id. This represents test docs to test the learned model.
 
         Returns
         -------
@@ -274,8 +304,10 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             self._ext = gldac.topic_matrix(self._this)
         return self._ext
 
-    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
-        return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations, inputs=inputs)
+    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None,
+                      iterations: int = None) -> base.MultiCallResult:
+        return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
+                                   inputs=inputs)
 
     def get_params(self) -> Params:
         """

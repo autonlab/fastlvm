@@ -18,15 +18,29 @@ Inputs = container.DataFrame
 Outputs = container.DataFrame
 Predicts = container.ndarray  # type: np.ndarray
 
+
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
 
+
 class HyperParams(hyperparams.Hyperparams):
-    k = hyperparams.UniformInt(lower=1, upper=10000, default=10, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of clusters to form as well as the number of centroids to generate.')
-    iters = hyperparams.UniformInt(lower=1, upper=10000, default=100, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of iterations of inference.')
-    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The number of top words requested')
-    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='The fraction of training data set aside as the validation. 0 = use all training as validation')
-    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1, semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'], description='A random seed to use')
+    k = hyperparams.UniformInt(lower=1, upper=10000, default=10,
+                               semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                               description='The number of clusters to form as well as the number of centroids to '
+                                           'generate.')
+    iters = hyperparams.UniformInt(lower=1, upper=10000, default=100,
+                                   semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                   description='The number of iterations of inference.')
+    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1,
+                                     semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                     description='The number of top words requested')
+    frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False,
+                               semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                               description='The fraction of training data set aside as the validation. 0 = use all '
+                                           'training as validation')
+    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1,
+                                  semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
+                                  description='A random seed to use')
 
 
 class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
@@ -47,10 +61,21 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         "id": "f410b951-1cb6-481c-8d95-2d97b31d411d",
         "version": "3.0.0",
         "name": "Latent Dirichlet Allocation Topic Modelling",
-        "description": "This class provides functionality for unsupervised inference on latent Dirichlet allocation, which is a probabilistic topic model of corpora of documents which seeks to represent the underlying thematic structure of the document collection. They have emerged as a powerful new technique of finding useful structure in an unstructured collection as it learns distributions over words. The high probability words in each distribution gives us a way of understanding the contents of the corpus at a very high level. In LDA, each document of the corpus is assumed to have a distribution over K topics, where the discrete topic distributions are drawn from a symmetric dirichlet distribution. Standard packages, like those in scikit learn are inefficient in addition to being limited to a single machine. Whereas our underlying C++ implementation can be distributed to run on multiple machines. To enable the distribution through python interface is work in progress. The API is similar to sklearn.decomposition.LatentDirichletAllocation.",
+        "description": "This class provides functionality for unsupervised inference on latent Dirichlet allocation, "
+                       "which is a probabilistic topic model of corpora of documents which seeks to represent the "
+                       "underlying thematic structure of the document collection. They have emerged as a powerful new "
+                       "technique of finding useful structure in an unstructured collection as it learns "
+                       "distributions over words. The high probability words in each distribution gives us a way of "
+                       "understanding the contents of the corpus at a very high level. In LDA, each document of the "
+                       "corpus is assumed to have a distribution over K topics, where the discrete topic "
+                       "distributions are drawn from a symmetric dirichlet distribution. Standard packages, "
+                       "like those in scikit learn are inefficient in addition to being limited to a single machine. "
+                       "Whereas our underlying C++ implementation can be distributed to run on multiple machines. To "
+                       "enable the distribution through python interface is work in progress. The API is similar to "
+                       "sklearn.decomposition.LatentDirichletAllocation.",
         "python_path": "d3m.primitives.natural_language_processing.lda.Fastlvm",
         "primitive_family": metadata_base.PrimitiveFamily.NATURAL_LANGUAGE_PROCESSING,
-        "algorithm_types": [ "LATENT_DIRICHLET_ALLOCATION" ],
+        "algorithm_types": ["LATENT_DIRICHLET_ALLOCATION"],
         "keywords": ["large scale LDA", "topic modeling", "clustering"],
         "source": {
             "name": "CMU",
@@ -58,18 +83,17 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             "uris": ["https://gitlab.datadrivendiscovery.org/cmu/fastlvm", "https://github.com/autonlab/fastlvm"]
         },
         "installation": [
-        {
-            "type": "PIP",
-            "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
-                                          git_commit=utils.current_git_commit(os.path.dirname(__file__)))
-        }
+            {
+                "type": "PIP",
+                "package_uri": 'git+https://github.com/autonlab/fastlvm.git@{git_commit}#egg=fastlvm'.format(
+                    git_commit=utils.current_git_commit(os.path.dirname(__file__)))
+            }
         ]
     })
 
-
     def __init__(self, *, hyperparams: HyperParams) -> None:
-        #super(LDA, self).__init__()
-        super().__init__(hyperparams = hyperparams)
+        # super(LDA, self).__init__()
+        super().__init__(hyperparams=hyperparams)
         self._this = None
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
@@ -84,7 +108,6 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._analyze = None  # to tokenize raw documents
 
         self.hyperparams = hyperparams
-
 
     def __del__(self):
         if self._this is not None:
@@ -183,7 +206,8 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         Parameters
         ----------
         inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to its word id. This represents test docs to test the learned model.
+            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to
+            its word id. This represents test docs to test the learned model.
 
         Returns
         -------
@@ -218,8 +242,10 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             self._ext = ldac.topic_matrix(self._this)
         return self._ext
 
-    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None, iterations: int = None) -> base.MultiCallResult:
-        return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations, inputs=inputs)
+    def multi_produce(self, *, produce_methods: typing.Sequence[str], inputs: Inputs, timeout: float = None,
+                      iterations: int = None) -> base.MultiCallResult:
+        return self._multi_produce(produce_methods=produce_methods, timeout=timeout, iterations=iterations,
+                                   inputs=inputs)
 
     def get_params(self) -> Params:
         """
