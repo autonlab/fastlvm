@@ -17,6 +17,7 @@ static PyObject *new_gmmc(PyObject *self, PyObject *args)
 {
   unsigned K=100;
   unsigned iters = 2000;
+  unsigned n_save = 0; // don't save intermediate and final results to files
   PyArrayObject *in_array_mean;
   PyArrayObject *in_array_var;
 
@@ -49,7 +50,7 @@ static PyObject *new_gmmc(PyObject *self, PyObject *args)
   double * fnp_var = reinterpret_cast< double * >( PyArray_GetPtr(in_array_var, idx) );
   Eigen::Map<Eigen::MatrixXd> varMatrix(fnp_var, numDims, numPoints);
 
-  utils::ParsedArgs params(K, iters, "simple");
+  utils::ParsedArgs params(K, iters, "simple", n_save);
   model* canopy = model::init(params, meanMatrix, varMatrix, 0);
   size_t int_ptr = reinterpret_cast< size_t >(canopy);
 
