@@ -245,6 +245,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         # Uniformly split the data to training and validation
         training, validation = split_inputs(tokenized, self._frac)
 
+        # Release the old object to prevent memory leaking
+        self.__del__()
         self._this = gldac.new(self._k, self._iters, vocab, wv)
         gldac.fit(self._this, training.tolist(), validation.tolist())
         # ============================================================
