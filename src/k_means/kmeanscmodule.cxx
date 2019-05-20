@@ -17,6 +17,7 @@ static PyObject *new_kmeansc(PyObject *self, PyObject *args)
 {
   unsigned K=100;
   unsigned iters = 2000;
+  unsigned n_save = 0; // don't save intermediate and final results to files
   PyArrayObject *in_array;
 
   if (!PyArg_ParseTuple(args,"IIO!:new_kmeansc", &K, &iters, &PyArray_Type, &in_array))
@@ -29,7 +30,7 @@ static PyObject *new_kmeansc(PyObject *self, PyObject *args)
   double * fnp = reinterpret_cast< double * >( PyArray_GetPtr(in_array, idx) );
   Eigen::Map<Eigen::MatrixXd> pointMatrix(fnp, numDims, numPoints);
 
-  utils::ParsedArgs params(K, iters, "canopyKM");
+  utils::ParsedArgs params(K, iters, "canopyKM", n_save);
   model* canopy = model::init(params, pointMatrix, 0);
   size_t int_ptr = reinterpret_cast< size_t >(canopy);
 
