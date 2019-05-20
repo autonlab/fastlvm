@@ -36,6 +36,7 @@ static PyObject *new_gldac(PyObject *self, PyObject *args)
 {
   unsigned K = 100;
   unsigned iters = 1000;
+  unsigned n_save = 0; // don't save intermediate and final results to files
   PyObject *in_vocab;
   PyArrayObject *in_array;
 
@@ -60,7 +61,7 @@ static PyObject *new_gldac(PyObject *self, PyObject *args)
   double * fnp = reinterpret_cast< double * >( PyArray_GetPtr(in_array, idx) );
   Eigen::Map<Eigen::MatrixXd> word_vec(fnp, numDims, numWords);
 
-  utils::ParsedArgs params(K, iters, "scaGLDA");
+  utils::ParsedArgs params(K, iters, "scaGLDA", n_save);
   model* glda = model::init(params, word_map, word_vec, 0);
   size_t int_ptr = reinterpret_cast< size_t >(glda);
 

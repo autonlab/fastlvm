@@ -176,7 +176,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
         if (rank == 0)
         {
             std::cout << "Iteration " << iter << " ..." << std::endl;
-            if (iter % n_save == 0)
+            if (n_save > 0 && iter % n_save == 0)
             {
                 // saving the model
                 std::cout << "Saving the model at iteration " << iter << "..." << std::endl;
@@ -210,8 +210,10 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
     if (rank == 0)
     {
         std::cout << "GLDA completed!" << std::endl;
-        std::cout << "Saving the final model!" << std::endl;
-        save_model(n_iters);
+        if (n_save > 0) {
+            std::cout << "Saving the final model!" << std::endl;
+            save_model(n_iters);
+        }
     }
     
     // free up buffer memory
