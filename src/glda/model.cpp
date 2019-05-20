@@ -160,7 +160,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
     std::chrono::high_resolution_clock::time_point ts, tn;
     if (rank == 0)
     {
-        std::cout << "Running " << n_iters << " iterations!" << std::endl;
+//        std::cout << "Running " << n_iters << " iterations!" << std::endl;
         time_ellapsed.push_back(0);
         likelihood.push_back(evaluate(testdata));
 //        std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
@@ -203,7 +203,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
             tn = std::chrono::high_resolution_clock::now();
             time_ellapsed.push_back(std::chrono::duration_cast<std::chrono::milliseconds>(tn - ts).count());
             likelihood.push_back(evaluate(testdata));
-            std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
+//            std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
         }
     }
 
