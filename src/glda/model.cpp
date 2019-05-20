@@ -163,7 +163,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
         std::cout << "Running " << n_iters << " iterations!" << std::endl;
         time_ellapsed.push_back(0);
         likelihood.push_back(evaluate(testdata));
-        std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
+//        std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
     }
     
     #ifdef MULTIMACHINE
@@ -175,7 +175,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
     {
         if (rank == 0)
         {
-            std::cout << "Iteration " << iter << " ..." << std::endl;
+//            std::cout << "Iteration " << iter << " ..." << std::endl;
             if (n_save > 0 && iter % n_save == 0)
             {
                 // saving the model
