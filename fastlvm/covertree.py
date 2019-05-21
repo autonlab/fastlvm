@@ -160,7 +160,7 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
         else:
             results, _ = covertreec.kNearestNeighbours(self._this, inputs.values, k)
 
-        output = container.DataFrame(results, generate_metadata=False, source=self)
+        output = container.DataFrame(results, generate_metadata=True)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
 
         return base.CallResult(output)
