@@ -50,7 +50,9 @@ bool CoverTree::insert(CoverTree::Node* current, const pointType& p, unsigned UI
             //release read lock then enter child
             current->mut.unlock_shared();
             flag = false;
-            std::cout << "Duplicate entry!!!" << std::endl;
+            #ifdef DEBUG
+                std::cout << "Duplicate entry!!!" << std::endl;
+            #endif
             break;
         }
         else if (dist_child <= child->covdist())
@@ -191,7 +193,9 @@ bool CoverTree::insert(const pointType& p, unsigned UID)
     double curr_root_dist = root->dist(p);
     if (curr_root_dist <= 0.0)
     {
-        std::cout << "Duplicate entry!!!" << std::endl;
+        #ifdef DEBUG
+            std::cout << "Duplicate entry!!!" << std::endl;
+        #endif
     }
     else if (curr_root_dist > root->covdist())
     {
@@ -873,22 +877,31 @@ CoverTree::CoverTree(const std::vector<pointType>& pList, int truncateArg /*= 0*
     if (50000 >= numPoints)
     {
         for (size_t i = 0; i < numPoints-1; ++i){
-	    if(!insert(pList[idx[i]], idx[i]))
+            if(!insert(pList[idx[i]], idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
     }
     else
     {
         for (size_t i = 0; i < 50000; ++i){
             utils::progressbar(i, 50000);
-            if(!insert(pList[idx[i]], idx[i]))
+            if(!insert(pList[idx[i]], idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
         utils::progressbar(50000, 50000);
         std::cerr<<std::endl;
         utils::parallel_for_progressbar(50000, numPoints-1, [&](size_t i)->void{
-            if(!insert(pList[idx[i]], idx[i]))
+            if(!insert(pList[idx[i]], idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         });
     }
 }
@@ -934,22 +947,31 @@ CoverTree::CoverTree(const Eigen::MatrixXd& pMatrix, int truncateArg /*= 0*/)
     if (50000 >= numPoints)
     {
         for (size_t i = 0; i < numPoints-1; ++i){
-	    if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
     }
     else
     {
         for (size_t i = 0; i < 50000; ++i){
             utils::progressbar(i, 50000);
-            if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
         utils::progressbar(50000, 50000);
         std::cerr<<std::endl;
         utils::parallel_for_progressbar(50000, numPoints-1, [&](size_t i)->void{
-            if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         });
     }
 }
@@ -995,22 +1017,31 @@ CoverTree::CoverTree(const Eigen::Map<Eigen::MatrixXd>& pMatrix, int truncateArg
     if (50000 >= numPoints)
     {
         for (size_t i = 0; i < numPoints-1; ++i){
-	    if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
     }
     else
     {
         for (size_t i = 0; i < 50000; ++i){
             utils::progressbar(i, 50000);
-            if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
         utils::progressbar(50000, 50000);
         std::cerr<<std::endl;
         utils::parallel_for_progressbar(50000, numPoints-1, [&](size_t i)->void{
-            if(!insert(pMatrix.col(idx[i]), idx[i]))
+            if(!insert(pMatrix.col(idx[i]), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         });
     }
 }
@@ -1056,22 +1087,31 @@ CoverTree::CoverTree(const std::vector<SuffStatsOne>& clusters, int truncateArg 
     if (50000 >= numPoints)
     {
         for (size_t i = 0; i < numPoints-1; ++i){
-	    if(!insert(clusters[idx[i]].get_mean(), idx[i]))
+            if(!insert(clusters[idx[i]].get_mean(), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
     }
     else
     {
         for (size_t i = 0; i < 50000; ++i){
             utils::progressbar(i, 50000);
-            if(!insert(clusters[idx[i]].get_mean(), idx[i]))
+            if(!insert(clusters[idx[i]].get_mean(), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         }
         utils::progressbar(50000, 50000);
         std::cerr<<std::endl;
         utils::parallel_for_progressbar(50000, numPoints-1, [&](size_t i)->void{
-            if(!insert(clusters[idx[i]].get_mean(), idx[i]))
+            if(!insert(clusters[idx[i]].get_mean(), idx[i])) {
+                #ifdef DEBUG
                 std::cout << "Insert failed!!!" << std::endl;
+                #endif
+            }
         });
     }
 }
@@ -1280,8 +1320,8 @@ CoverTree* CoverTree::from_multimachine(const Eigen::Map<Eigen::MatrixXd>& pMatr
                 //for (int i = begin + 1; i < end; ++i){
                 //utils::progressbar(i, end-50000);
                 if(!ct->insert(pMatrix_r.col(i), i)){
-                    std::cout << "Insert failed!!!" << std::endl;
                     #ifdef DEBUG
+                    std::cout << "Insert failed!!!" << std::endl;
                     fout << "Insert failed!!!" << std::endl;
                     #endif
                 }
