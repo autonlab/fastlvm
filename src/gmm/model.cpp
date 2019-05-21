@@ -103,7 +103,9 @@ double model::fit(const pointList& trngdata, const pointList& testdata)
         std::cout << "Running " << n_iters << " iterations!" << std::endl;
         time_ellapsed.push_back(0);
         likelihood.push_back(evaluate(testdata));
+        #ifdef DEBUG
         std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
+        #endif
     }
     
     #ifdef MULTIMACHINE
@@ -115,7 +117,9 @@ double model::fit(const pointList& trngdata, const pointList& testdata)
     {
         if (rank == 0)
         {
+            #ifdef DEBUG
             std::cout << "Iteration " << iter << " ..." << std::endl;
+            #endif
             if (n_save > 0 && iter % n_save == 0)
             {
                 // saving the model
@@ -151,7 +155,9 @@ double model::fit(const pointList& trngdata, const pointList& testdata)
             tn = std::chrono::high_resolution_clock::now();
             time_ellapsed.push_back(std::chrono::duration_cast<std::chrono::milliseconds>(tn - ts).count());
             likelihood.push_back(evaluate(testdata));
+            #ifdef DEBUG
             std::cout << "Likelihood on held out points: " << likelihood.back() << " at time " << time_ellapsed.back() << std::endl;
+            #endif
         }
     }
 
