@@ -57,7 +57,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "f410b951-1cb6-481c-8d95-2d97b31d411d",
-        "version": "3.0.0",
+        "version": "3.0.1",
         "name": "Latent Dirichlet Allocation Topic Modelling",
         "description": "This class provides functionality for unsupervised inference on latent Dirichlet allocation, "
                        "which is a probabilistic topic model of corpora of documents which seeks to represent the "

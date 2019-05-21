@@ -33,7 +33,7 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "e770fae6-da6d-45f8-86bf-38a121a4e65a",
-        "version": "3.0.0",
+        "version": "3.0.1",
         "name": "Nearest Neighbor Classification with Cover Trees",
         "description": "Classifier implementing the k-nearest neighbors vote using Cover Trees.",
         "python_path": "d3m.primitives.classification.cover_tree.Fastlvm",

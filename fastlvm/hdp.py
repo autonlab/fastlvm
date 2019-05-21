@@ -79,7 +79,7 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "e582e738-2f7d-4b5d-964f-022d15f19018",
-        "version": "3.0.0",
+        "version": "3.0.1",
         "name": "Hierarchical Dirichlet Process Topic Modelling",
         "description": "This class provides functionality for Hierarchical Dirichlet Process, which is a "
                        "nonparametric Bayesian model for topic modelling on corpora of documents which seeks to "
