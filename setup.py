@@ -96,6 +96,7 @@ setup(name='fastlvm',
           'd3m.primitives': [
               'classification.cover_tree.Fastlvm = fastlvm:CoverTreeClassifier',
               'regression.cover_tree.Fastlvm = fastlvm:CoverTreeRegressor',
+              # 'clustering.cover_tree.Fastlvm = fastlvm:CoverTree',
               'clustering.k_means.Fastlvm = fastlvm:KMeans',
               'clustering.gmm.Fastlvm = fastlvm:GMM',
               'natural_language_processing.lda.Fastlvm = fastlvm:LDA',
