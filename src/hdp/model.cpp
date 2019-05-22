@@ -248,7 +248,7 @@ double model::fit(const DataIO::corpus& trngdata, const DataIO::corpus& testdata
 
     if (rank == 0)
     {
-        std::cout << "LDA completed!" << std::endl;
+        std::cout << "HDP completed!" << std::endl;
         if (n_save > 0) {
             std::cout << "Saving the final model!" << std::endl;
             save_model(n_iters);
