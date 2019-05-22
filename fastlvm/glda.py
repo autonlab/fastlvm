@@ -1,6 +1,7 @@
 import gldac
 
 import numpy as np
+import pandas as pd
 import typing
 import os
 from sklearn.feature_extraction.text import CountVectorizer
@@ -254,11 +255,13 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         # ============================================================
 
         # Get per-word topic assignment
-        raw_documents = get_documents(inputs)
+        raw_documents, non_text_features = get_documents(inputs, non_text=True)
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = gldac.predict(self._this, tokenized.tolist())  # per word topic assignment
-        features = tpd(predicted, self._k)
+        text_features = tpd(predicted, self._k)
 
+        # concatenate the features row-wise
+        features = pd.concat([non_text_features, container.DataFrame(text_features)], axis=1)
         features = container.DataFrame(features, generate_metadata=True)
 
         return base.CallResult(features)

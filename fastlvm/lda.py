@@ -3,6 +3,7 @@ import typing
 
 import ldac
 import numpy as np
+import pandas as pd
 from d3m import container, utils
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
@@ -188,11 +189,13 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of 1d numpy array which represents probability of the topic each document belongs to.
 
         """
-        raw_documents = get_documents(inputs)
+        raw_documents, non_text_features = get_documents(inputs, non_text=True)
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = ldac.predict(self._this, tokenized.tolist())  # per word topic assignment
-        features = tpd(predicted, self._k)
+        text_features = tpd(predicted, self._k)
 
+        # concatenate the features row-wise
+        features = pd.concat([non_text_features, container.DataFrame(text_features)], axis=1)
         features = container.DataFrame(features, generate_metadata=True)
 
         return base.CallResult(features)

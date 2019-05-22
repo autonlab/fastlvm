@@ -3,6 +3,7 @@ import typing
 
 import hdpc
 import numpy as np
+import pandas as pd
 from d3m import container, utils
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
@@ -208,12 +209,14 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of 1d numpy array which represents index of the topic each token belongs to.
 
         """
-        raw_documents = get_documents(inputs)
+        raw_documents, non_text_features = get_documents(inputs, non_text=True)
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = hdpc.predict(self._this,
                                  tokenized.tolist())  # per word topic assignment # TODO investigate why some index is bigger than self._k
-        features = tpd(predicted, self._k)
+        text_features = tpd(predicted, self._k)
 
+        # concatenate the features row-wise
+        features = pd.concat([non_text_features, container.DataFrame(text_features)], axis=1)
         features = container.DataFrame(features, generate_metadata=True)
 
         return base.CallResult(features)

@@ -3,6 +3,7 @@ import numpy as np
 import utilsc
 import typing
 from d3m.metadata import base as metadata_base
+from d3m import container
 
 _stirling = utilsc.new_stirling()
 
@@ -80,10 +81,14 @@ def split_inputs(tokenized, frac):
     return training, validation
 
 
-def get_documents(training_inputs):
+def get_documents(training_inputs, non_text=False):
     """Extract the text columns and concatenate them row-wise
 
-    returns: a Series. Each element is a string.
+    non_text: True to return both text and non-text columns. False to only return text attribute.
+
+    returns: if non_text == False, returns a Series of strings. If non_text == True,
+    returns a tuple of a Series and a Data frame. Each element in the Series is a string.
+    The Data Frame contains any non text columns. It could be empty.
     """
     # Adapted from https://github.com/brekelma/dsbox_corex/blob/master/corex_text.py
 
@@ -104,6 +109,8 @@ def get_documents(training_inputs):
     # but, don't want to edit categorical columns
     text_columns = set(text_columns) - set(categorical_attributes)
 
+    non_text_columns = set(all_attributes) - set(text_columns)
+
     # and, we want the text columns as a list
     text_columns = list(text_columns)
 
@@ -119,7 +126,16 @@ def get_documents(training_inputs):
         else:
             raw_documents = copy.deepcopy(training_inputs.iloc[:, column_index])
 
-    return raw_documents
+    if non_text:
+        # data frame of non-text columns
+        if len(non_text_columns) > 0:
+            non_text_features = training_inputs.iloc[:, list(non_text_columns)]
+        else:
+            non_text_features = container.DataFrame()
+
+        return raw_documents, non_text_features
+    else:
+        return raw_documents
 
 
 def tokenize(raw_documents, vocabulary, analyze):
