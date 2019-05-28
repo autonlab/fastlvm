@@ -4,6 +4,7 @@ import utilsc
 import typing
 from d3m.metadata import base as metadata_base
 from d3m import container
+from common_primitives import utils
 
 _stirling = utilsc.new_stirling()
 
@@ -129,9 +130,12 @@ def get_documents(training_inputs, non_text=False):
     if non_text:
         # data frame of non-text columns
         if len(non_text_columns) > 0:
-            non_text_features = training_inputs.iloc[:, list(non_text_columns)]
+            non_text_features = training_inputs.iloc[:, list(non_text_columns)].copy()
+
+            # remove text_columns in the metadata
+            non_text_features.metadata = non_text_features.metadata.remove_columns(text_columns)
         else:
-            non_text_features = container.DataFrame()
+            non_text_features = container.DataFrame(generate_metadata=True)
 
         return raw_documents, non_text_features
     else:
@@ -161,7 +165,7 @@ def tokenize(raw_documents, vocabulary, analyze):
     return np.array(tokenized)
 
 
-def tpd(zs, k):
+def _tpd(zs, k):
     """ Convert to feature vector
     Returns a 2D ndarray
     """
@@ -173,3 +177,24 @@ def tpd(zs, k):
         if len(doc) > 0:
             tpdm[i] /= len(doc)
     return tpdm
+
+
+def mk_text_features(prediction, ntopics):
+    """ Convert to feature
+
+    Returns a DataFrame with metadata
+    """
+    tpdm = _tpd(prediction, ntopics)
+
+    # create metadata for the text feature columns
+    features = container.DataFrame(tpdm, generate_metadata=True)
+    for column_index in range(features.shape[1]):
+        col_dict = dict(features.metadata.query((metadata_base.ALL_ELEMENTS, column_index)))
+        col_dict['structural_type'] = type(1.0)
+        # FIXME: assume we apply fastlvm only once per template, otherwise column names might duplicate
+        col_dict['name'] = 'fastlvm_' + str(column_index)
+        col_dict['semantic_types'] = ('http://schema.org/Float',
+                                      'https://metadata.datadrivendiscovery.org/types/Attribute')
+        features.metadata = features.metadata.update((metadata_base.ALL_ELEMENTS, column_index), col_dict)
+
+    return features
