@@ -11,7 +11,7 @@ from d3m.primitive_interfaces import base
 from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 from sklearn.feature_extraction.text import CountVectorizer
 
-from fastlvm.utils import get_documents, tpd, tokenize, split_inputs
+from fastlvm.utils import get_documents, mk_text_features, tokenize, split_inputs
 
 Inputs = container.DataFrame
 Outputs = container.DataFrame
@@ -213,11 +213,13 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = hdpc.predict(self._this,
                                  tokenized.tolist())  # per word topic assignment # TODO investigate why some index is bigger than self._k
-        text_features = tpd(predicted, self._k)
+        text_features = mk_text_features(predicted, self._k)
 
         # concatenate the features row-wise
-        features = pd.concat([non_text_features, container.DataFrame(text_features)], axis=1)
-        features = container.DataFrame(features, generate_metadata=True)
+        features = pd.concat([non_text_features, text_features], axis=1)
+
+        # append columns in the metadata
+        features.metadata = features.metadata.append_columns(text_features.metadata)
 
         return base.CallResult(features)
 
