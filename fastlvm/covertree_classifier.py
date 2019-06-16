@@ -178,7 +178,10 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
         else:
             results, _ = covertreec.kNearestNeighbours(self._this, inputs.values, k)
             predicted = np.apply_along_axis(to_labels, 1, results)
-            mode, _ = stats.mode(predicted, axis=1)
+            mode = []
+            for pred in predicted:
+                m, _ = stats.mode(pred, nan_policy='omit')
+                mode.append(m)
 
         if self._index_out_of_bound_count >= self._INDEX_OUT_OF_BOUND_COUNT_MAX:
             self.logger.warning("And {} more index out of bounds warnings".format(1 + self._index_out_of_bound_count -
