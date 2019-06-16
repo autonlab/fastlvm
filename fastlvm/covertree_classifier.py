@@ -180,8 +180,8 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             predicted = np.apply_along_axis(to_labels, 1, results)
             mode, _ = stats.mode(predicted, axis=1)
 
-        if self._index_out_of_bound_count > self._INDEX_OUT_OF_BOUND_COUNT_MAX:
-            self.logger.warning("And {} more index out of bounds warnings".format(self._index_out_of_bound_count -
+        if self._index_out_of_bound_count >= self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+            self.logger.warning("And {} more index out of bounds warnings".format(1 + self._index_out_of_bound_count -
                                                                                   self._INDEX_OUT_OF_BOUND_COUNT_MAX))
 
         output = container.DataFrame(mode, generate_metadata=True)
