@@ -64,6 +64,8 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
         self._training_outputs = None
         self._fitted = False
         self.hyperparams = hyperparams
+        self._INDEX_OUT_OF_BOUND_COUNT_MAX = 3
+        self._index_out_of_bound_count = 0
 
     def __del__(self):
         if self._this is not None:
@@ -126,6 +128,8 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             The k nearest neighbours of each point.
 
         """
+        self._index_out_of_bound_count = 0
+
         if self._this is None:
             raise ValueError('Fit model first')
 
@@ -136,11 +140,13 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             if i < len(_y):
                 return _y[i]
             else:
-                self.logger.warning("Index out of bound: index %(i)s is greater than %(max)s. This may be a bug. "
-                                    "We'll use the first label.", {
-                                        'i': i,
-                                        'max': len(_y)
-                                    })
+                if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                    self.logger.warning("Index out of bound: index %(i)s is greater than %(max)s. This may be a bug. "
+                                        "We'll use the first label.", {
+                                            'i': i,
+                                            'max': len(_y)
+                                        })
+                self._index_out_of_bound_count += 1
                 return _y[0]
 
         # Turn indices to labels. Used when k > 1
@@ -150,13 +156,15 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
                 if i < len(_y):
                     labels.append(_y[i])
                 else:  # FIXME: this may be a bug in the underlying code.
-                    self.logger.warning("Index out of bounds: index %(idx)s is greater than %(max)s in row %(row)s. "
-                                        "This may be a bug. We'll replace it with the first value in the row that is "
-                                        "less than %(max)s.", {
-                                            'idx': i,
-                                            'max': len(_y),
-                                            'row': str(row)
-                                        })
+                    if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                        self.logger.warning("Index out of bounds: index %(idx)s is greater than %(max)s in row %(row)s. "
+                                            "This may be a bug. We'll replace it with the first value in the row that is "
+                                            "less than %(max)s.", {
+                                                'idx': i,
+                                                'max': len(_y),
+                                                'row': str(row)
+                                            })
+                    self._index_out_of_bound_count += 1
                     for j in row:
                         if j < len(_y):
                             labels.append(_y[j])
@@ -171,6 +179,10 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             results, _ = covertreec.kNearestNeighbours(self._this, inputs.values, k)
             predicted = np.apply_along_axis(to_labels, 1, results)
             mode, _ = stats.mode(predicted, axis=1)
+
+        if self._index_out_of_bound_count > self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+            self.logger.warning("And {} more index out of bounds warnings".format(self._INDEX_OUT_OF_BOUND_COUNT_MAX -
+                                                                                  self._index_out_of_bound_count))
 
         output = container.DataFrame(mode, generate_metadata=True)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
