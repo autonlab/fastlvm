@@ -34,3 +34,22 @@ class TestKMeans(TestCase):
         b = skm.score(self.x2)
 
         self.assertAlmostEqual(a, b, places=1)
+
+    def test_get_set_param(self):
+        K = 10
+        hp = HyperParams(k=K, iters=100, initialization='covertree')
+        ctm = KMeans(hyperparams=hp)
+        ctm.set_training_data(inputs=pd.DataFrame(self.x))
+        ctm.fit()
+        a = ctm.evaluate(inputs=pd.DataFrame(self.x2))
+
+        # call get_params
+        p = ctm.get_params()
+        ctm = None
+
+        # call set_params
+        ct_new = KMeans(hyperparams=hp)
+        ct_new.set_params(params=p)
+        a_new = ct_new.evaluate(inputs=pd.DataFrame(self.x2))
+
+        self.assertAlmostEqual(a, a_new)
