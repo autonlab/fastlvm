@@ -20,13 +20,15 @@ class TestCoverTree(TestCase):
         x2 = np.vstack([np.random.randn(N // 10, D) + means[i] for i in range(K)])
         self.x2 = np.require(x2, requirements=['A', 'C', 'O', 'W'])
 
-    def test_produce(self):
+    def run_models(self, k):
         """
         Find the k-nearest neighbor in x for every element in x2
         Compare the results from our model and the baseline
+        :param k: number of nearest neighbors
+        :return: a tuple of our model prediction and baseline result
         """
         # fit model
-        hp = onehp(trunc=-1, k=1)
+        hp = onehp(trunc=-1, k=k)
         self.coverTree = CoverTree(hyperparams=hp)
         self.coverTree.set_training_data(inputs=pd.DataFrame(self.x))
         self.coverTree.fit()
@@ -36,8 +38,26 @@ class TestCoverTree(TestCase):
         first = np.squeeze(self.x[a.value])
 
         # baseline model
-        nbrs = NearestNeighbors(n_neighbors=1, algorithm='brute').fit(self.x)
+        nbrs = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(self.x)
         distances, indices = nbrs.kneighbors(self.x2)
         second = np.squeeze(self.x[indices])
+
+        return first, second
+
+    def test_produce(self):
+        """
+        Find the 1-nearest neighbor in x for every element in x2
+        Compare the results from our model and the baseline
+        """
+        first, second = self.run_models(1)
+
+        self.assertTrue(np.array_equiv(first, second))
+
+    def test_produce_3nn(self):
+        """
+        Find the 3-nearest neighbor in x for every element in x2
+        Compare the results from our model and the baseline
+        """
+        first, second = self.run_models(3)
 
         self.assertTrue(np.array_equiv(first, second))
