@@ -210,7 +210,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
         score : float
             The score (-ve of K-Means objective value) on the supplied points.
         """
-        return kmeansc.evaluate(self._this, inputs.value)
+        return kmeansc.evaluate(self._this, inputs.values)
 
     def produce_centers(self) -> OutputCenters:
         """
