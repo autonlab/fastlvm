@@ -9,16 +9,16 @@ from fastlvm import LDA
 
 class TestLDA(TestCase):
     def setUp(self) -> None:
-        pass
-
-    def test_produce(self):
+        self.num_topics = 10
         # Load NIPS data
-        trngdata, vocab = read_corpus('../data/nips/corpus.train')
-        testdata, vocab = read_corpus('../data/nips/corpus.test', vocab)
+        self.trngdata, self.vocab = read_corpus('../data/nips/corpus.train')
+        self.testdata, self.vocab = read_corpus('../data/nips/corpus.test', self.vocab)
 
+        self.canlda = None  # LDA model
+
+    def lda(self, trngdata, testdata):
         # Init LDA model
-        num_topics = 10
-        hp = HyperParams(k=num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
         canlda = LDA(hyperparams=hp)
         canlda.set_training_data(inputs=self.transform(trngdata))
 
@@ -26,23 +26,33 @@ class TestLDA(TestCase):
         # Test on held out data using learned model
         a = canlda.evaluate(inputs=testdata)
 
+        self.canlda = canlda
+        return a
+
+    def test_produce(self):
+        a = self.lda(trngdata=self.trngdata, testdata=self.testdata)
+        self.assertTrue(a is not None)
+
+    def test_compare_to_baseline(self):
+        a = self.lda(trngdata=self.trngdata, testdata=self.testdata)
+
         # Get topic matrix
-        tm = canlda.produce_topic_matrix()
+        tm = self.canlda.produce_topic_matrix()
 
         # Get topic assignment
-        zz = canlda.produce(inputs=self.transform(testdata))
+        zz = self.canlda.produce(inputs=self.transform(self.testdata))
         zz = zz.value
-        self.assertEqual(len(zz), len(testdata))
+        self.assertEqual(len(zz), len(self.testdata))
 
-        id2word = {idx: v for idx, v in enumerate(vocab)}
+        id2word = {idx: v for idx, v in enumerate(self.vocab)}
         # Read word|topic distribution from gensim
-        m = self.baseline(np.array(trngdata), id2word=id2word, num_topics=num_topics)
+        m = self.baseline(np.array(self.trngdata), id2word=id2word, num_topics=self.num_topics)
 
         # use the baseline weight
         np.copyto(tm, m[tm.shape[0], :])  # FIXME: baseline and LDA weight matrices have different shape
 
         # Test on held out data using gensim model
-        b = canlda.evaluate(inputs=testdata)
+        b = self.canlda.evaluate(inputs=self.testdata)
 
         self.assertAlmostEqual(a, b, places=1)
 
