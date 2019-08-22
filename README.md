@@ -95,6 +95,11 @@ The make file has some useful features:
 
 ## Performance
 
+## Unit testing
+```bash
+cd tests
+python -m unittest discover  # requires unittest 3.2 and newer
+```
 
 ## Attributions
 We use a distributed and parallel extension and implementation of Cover Tree data structure for nearest neighbour search. The data structure was originally presented in and improved in:
