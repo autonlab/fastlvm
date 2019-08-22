@@ -1,4 +1,3 @@
-import numpy as np
 from d3m import container
 from d3m.metadata import base as metadata_base
 from unittest import TestCase
@@ -7,14 +6,17 @@ from fastlvm.hdp import HyperParams
 
 
 class TestHDP(TestCase):
-    def test_produce(self):
+    def setUp(self) -> None:
+        self.num_topics = 10
         # Load NIPS data
-        trngdata, vocab = read_corpus('../data/nips/corpus.train')
-        testdata, vocab = read_corpus('../data/nips/corpus.test', vocab)
+        self.trngdata, self.vocab = read_corpus('../data/nips/corpus.train')
+        self.testdata, self.vocab = read_corpus('../data/nips/corpus.test', self.vocab)
 
+        self.canlda = None  # LDA model
+
+    def hdp(self, trngdata, testdata):
         # Init HDP model
-        num_topics = 10
-        hp = HyperParams(k=num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
         hdp = HDP(hyperparams=hp)
         hdp.set_training_data(inputs=self.transform(trngdata))
 
@@ -22,14 +24,24 @@ class TestHDP(TestCase):
         # Test on held out data using learned model
         a = hdp.evaluate(inputs=testdata)
 
+        self.canlda = hdp  # HDP model
+        return a
+
+    def test_produce(self):
+        a = self.hdp(trngdata=self.trngdata, testdata=self.testdata)
+        self.assertTrue(a is not None)
+
+    def test_compare_to_baseline(self):
+        a = self.hdp(trngdata=self.trngdata, testdata=self.testdata)
+
         # TODO is it a good idea to use LDA as the baseline?
         # Use LDA model as baseline
-        hp = HyperParams(k=num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
         canlda = LDA(hyperparams=hp)
-        canlda.set_training_data(inputs=self.transform(trngdata))
+        canlda.set_training_data(inputs=self.transform(self.trngdata))
         canlda.fit()
         # Test on held out data using learned model
-        b = canlda.evaluate(inputs=testdata)
+        b = canlda.evaluate(inputs=self.testdata)
 
         self.assertAlmostEqual(a, b, places=1)
 
