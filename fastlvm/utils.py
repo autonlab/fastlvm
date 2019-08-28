@@ -87,9 +87,10 @@ def get_documents(training_inputs, non_text=False):
 
     non_text: True to return both text and non-text columns. False to only return text attribute.
 
-    returns: if non_text == False, returns a Series of strings. If non_text == True,
-    returns a tuple of a Series and a Data frame. Each element in the Series is a string.
+    returns: if non_text == False, returns a Series of strings.
+    If non_text == True, returns a tuple of a Series and a Data frame. Each element in the Series is a string.
     The Data Frame contains any non text columns. It could be empty.
+    None if the `training_inputs` contain no text columns
     """
     # Adapted from https://github.com/brekelma/dsbox_corex/blob/master/corex_text.py
 
@@ -115,9 +116,9 @@ def get_documents(training_inputs, non_text=False):
     # and, we want the text columns as a list
     text_columns = list(text_columns)
 
-    # TODO if no text columns are present don't do anything
+    # if no text columns are present don't do anything
     if len(text_columns) == 0:
-        raise ValueError("The input has no text columns.")
+        return None
 
     # concatenate the columns row-wise
     raw_documents = None

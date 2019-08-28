@@ -213,6 +213,12 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         # Create documents from the data-frame
         raw_documents = get_documents(self._training_inputs)
 
+        if raw_documents is None:  # training data contains no text fields
+            if self._this is not None:
+                gldac.delete(self._this, self._ext)
+            self._this = None
+            return base.CallResult(inputs)
+
         # Extract the vocabulary from the inputs data-frame
         self._vectorizer = CountVectorizer()
         self._vectorizer.fit(raw_documents)

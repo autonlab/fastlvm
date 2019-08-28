@@ -139,6 +139,13 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         # Create documents from the data-frame
         raw_documents = get_documents(self._training_inputs)
 
+        if raw_documents is None:  # training data contains no text fields
+            self._fitted = True
+            if self._this is not None:
+                ldac.delete(self._this, self._ext)
+            self._this = None
+            return base.CallResult(None)
+
         # Extract the vocabulary from the inputs data-frame
         self._vectorizer = CountVectorizer()
         self._vectorizer.fit(raw_documents)
@@ -189,6 +196,9 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of 1d numpy array which represents probability of the topic each document belongs to.
 
         """
+        if self._this is None:
+            return base.CallResult(inputs)
+
         raw_documents, non_text_features = get_documents(inputs, non_text=True)
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = ldac.predict(self._this, tokenized.tolist())  # per word topic assignment

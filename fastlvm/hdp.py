@@ -158,6 +158,12 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
         # Create documents from the data-frame
         raw_documents = get_documents(self._training_inputs)
+        if raw_documents is None:  # training data contains no text fields
+            self._fitted = True
+            if self._this is not None:
+                hdpc.delete(self._this, self._ext)
+            self._this = None
+            return base.CallResult(None)
 
         # Extract the vocabulary from the inputs data-frame
         self._vectorizer = CountVectorizer()
@@ -209,6 +215,9 @@ class HDP(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A list of 1d numpy array which represents index of the topic each token belongs to.
 
         """
+        if self._this is None:
+            return base.CallResult(inputs)
+
         raw_documents, non_text_features = get_documents(inputs, non_text=True)
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
         predicted = hdpc.predict(self._this,
