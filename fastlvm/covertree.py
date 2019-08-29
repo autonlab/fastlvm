@@ -1,13 +1,11 @@
 import covertreec
 
+import os
 import numpy as np
-import pdb
-import typing, sys, os
 
 from d3m.primitive_interfaces.unsupervised_learning import UnsupervisedLearnerPrimitiveBase
 from d3m.primitive_interfaces import base
 from d3m import container, utils
-import d3m.metadata
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
 
@@ -91,6 +89,8 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
         self._training_inputs = None  # type: Inputs
         self._fitted = False
         self.hyperparams = hyperparams
+        self._INDEX_OUT_OF_BOUND_COUNT_MAX = 3
+        self._index_out_of_bound_count = 0
 
     def __del__(self):
         if self._this is not None:
@@ -151,16 +151,61 @@ class CoverTree(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperP
             The k nearest neighbours of each point.
 
         """
+        self._index_out_of_bound_count = 0
+
         if self._this is None:
             raise ValueError('Fit model first')
+
+        _y = self._training_inputs
+
+        # Turn an index to a label. Used when k==1
+        def to_label(i):  # FIXME: this may be a bug in the underlying code.
+            if i < len(_y):
+                return i
+            else:
+                if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                    self.logger.warning("Index out of bound: index %(i)s is greater than %(max)s. This may be a bug. "
+                                        "We'll use the first label.", {
+                                            'i': i,
+                                            'max': len(_y)
+                                        })
+                self._index_out_of_bound_count += 1
+                return 0
+
+        # Turn indices to labels. Used when k > 1
+        def to_labels(row):
+            labels = []
+            for i in row:
+                if i < len(_y):
+                    labels.append(i)
+                else:  # FIXME: this may be a bug in the underlying code.
+                    if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                        self.logger.warning("Index out of bounds: index %(idx)s is greater than %(max)s. "
+                                            "This may be a bug. We'll replace it with the first value in the row that is "
+                                            "less than %(max)s.", {
+                                                'idx': i,
+                                                'max': len(_y)
+                                            })
+                    self._index_out_of_bound_count += 1
+                    for j in row:
+                        if j < len(_y):
+                            labels.append(j)
+                            break
+            return np.squeeze(labels)
 
         k = self._k
         if k == 1:
             results, _ = covertreec.NearestNeighbour(self._this, inputs.values)
+            predicted = [to_label(i) for i in results]
         else:
             results, _ = covertreec.kNearestNeighbours(self._this, inputs.values, k)
+            predicted = np.apply_along_axis(to_labels, 1, results)
 
-        output = container.DataFrame(results, generate_metadata=True)
+        if self._index_out_of_bound_count >= self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+            self.logger.warning("And {} more index out of bounds warnings.".format(1 + self._index_out_of_bound_count -
+                                                                                  self._INDEX_OUT_OF_BOUND_COUNT_MAX))
+
+        output = container.DataFrame(predicted, generate_metadata=True)
         # output.metadata = inputs.metadata.clear(source=self, for_value=output, generate_metadata=True)
 
         return base.CallResult(output)
