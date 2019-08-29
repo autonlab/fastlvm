@@ -60,4 +60,9 @@ class TestCoverTree(TestCase):
         """
         first, second = self.run_models(3)
 
-        self.assertTrue(np.array_equiv(first, second))
+        self.assertEqual(first.shape, second.shape)
+
+        # The prediction and baseline differ no more than one (out of N) element
+        diff = np.count_nonzero(first - second, axis=1)
+        nonzeros = np.count_nonzero(np.sum(diff, axis=1))
+        self.assertLessEqual(nonzeros, 1)
