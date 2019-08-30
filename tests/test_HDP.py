@@ -16,7 +16,7 @@ class TestHDP(TestCase):
 
     def hdp(self, trngdata, testdata):
         # Init HDP model
-        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=15, seed=1, frac=0.01)
         hdp = HDP(hyperparams=hp)
         hdp.set_training_data(inputs=self.transform(trngdata))
 
