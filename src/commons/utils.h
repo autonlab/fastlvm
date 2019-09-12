@@ -123,6 +123,14 @@ namespace utils
         return f;
     }
 
+    /**
+     * Disabled progressbar
+     * @tparam UnaryFunction
+     * @param first
+     * @param last
+     * @param f
+     * @return
+     */
     template<class UnaryFunction>
     UnaryFunction parallel_for_progressbar(size_t first, size_t last, UnaryFunction f)
     {
@@ -130,52 +138,25 @@ namespace utils
         const size_t total_length = last - first;
         const size_t chunk_length = total_length / cores;
         
-        if(total_length <= 10000)
-        {
-            auto task = [&f,&chunk_length](size_t start, size_t end)->void{
-                for (; start < end; ++start){
-                    f(start);
-                }
-            };
-            
-            size_t chunk_start = first;
-            std::vector<std::future<void>>  for_threads;
-            for (unsigned i = 0; i < cores - 1; ++i)
-            {
-                const auto chunk_stop = chunk_start + chunk_length;
-                for_threads.push_back(std::async(std::launch::async, task, chunk_start, chunk_stop));
-                chunk_start = chunk_stop;
+        auto task = [&f,&chunk_length](size_t start, size_t end)->void{
+            for (; start < end; ++start){
+                f(start);
             }
-            for_threads.push_back(std::async(std::launch::async, task, chunk_start, last));
+        };
 
-            for (auto& thread : for_threads)
-                thread.get();
-        }
-        else
+        size_t chunk_start = first;
+        std::vector<std::future<void>>  for_threads;
+        for (unsigned i = 0; i < cores - 1; ++i)
         {
-            auto task = [&f,&chunk_length](size_t start, size_t end)->void{
-                for (; start < end; ++start){
-                    progressbar(start%chunk_length, chunk_length);
-                    f(start);
-                }
-            };
-            
-            size_t chunk_start = first;
-            std::vector<std::future<void>>  for_threads;
-            for (unsigned i = 0; i < cores - 1; ++i)
-            {
-                const auto chunk_stop = chunk_start + chunk_length;
-                for_threads.push_back(std::async(std::launch::async, task, chunk_start, chunk_stop));
-                chunk_start = chunk_stop;
-            }
-            for_threads.push_back(std::async(std::launch::async, task, chunk_start, last));
-
-            for (auto& thread : for_threads)
-                thread.get();
-            progressbar(chunk_length, chunk_length);
-            std::cerr << std::endl;
+            const auto chunk_stop = chunk_start + chunk_length;
+            for_threads.push_back(std::async(std::launch::async, task, chunk_start, chunk_stop));
+            chunk_start = chunk_stop;
         }
-        
+        for_threads.push_back(std::async(std::launch::async, task, chunk_start, last));
+
+        for (auto& thread : for_threads)
+            thread.get();
+
         return f;
     }
 
@@ -714,6 +695,8 @@ namespace utils
         std::string data_path;
         std::string name;
         std::string out_path;
+        unsigned char use_seed = 0;
+        uint64_t seed;
         
         ParsedArgs(int argc, char ** argv)
         {
@@ -819,6 +802,8 @@ namespace utils
         
         ParsedArgs(unsigned num_atoms=100, unsigned num_iters=1000, std::string algorithm="simple",
                    unsigned output_interval=200, unsigned top_words=15,
+                   unsigned char use_random_seed = 0,
+                   uint64_t random_seed=std::chrono::high_resolution_clock::now().time_since_epoch().count(),
                    unsigned num_threads=std::thread::hardware_concurrency(),
                    std::string init_scheme="random", std::string output_path="./")
         {
@@ -832,6 +817,8 @@ namespace utils
             data_path = "./";
             name = "custom";
             out_path = output_path;
+            use_seed = use_random_seed;
+            seed = random_seed;
         }
     };
     

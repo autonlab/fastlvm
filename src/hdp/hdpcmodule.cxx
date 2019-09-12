@@ -5,6 +5,7 @@
 #include <Python.h>
 #include "numpy/arrayobject.h"
 #include "hdp.h"
+#include <chrono>
 
 int DataIO::corpus::from_python(PyObject* collection)
 {  
@@ -37,9 +38,12 @@ static PyObject *new_hdpc(PyObject *self, PyObject *args)
   unsigned K = 100;
   unsigned iters = 1000;
   unsigned n_save = 0; // don't save intermediate and final results to files
+  unsigned top_words = 15;
+  unsigned char use_seed = 0;
+  uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   PyObject *in_vocab;
 
-  if (!PyArg_ParseTuple(args,"IIO!:new_hdpc", &K, &iters, &PyList_Type, &in_vocab))
+  if (!PyArg_ParseTuple(args,"IIO!IbK:new_hdpc", &K, &iters, &PyList_Type, &in_vocab, &top_words, &use_seed, &seed))
     return NULL;
 
   /* Convert existing vocab into a map for fast search and insertion */
@@ -48,7 +52,7 @@ static PyObject *new_hdpc(PyObject *self, PyObject *args)
   for(unsigned w = 0; w < V; ++w)
       word_map.emplace_back((char*)PyUnicode_DATA(PyList_GET_ITEM(in_vocab, w)));
 
-  utils::ParsedArgs params(K, iters, "aliasHDP", n_save);
+  utils::ParsedArgs params(K, iters, "aliasHDP", n_save, top_words, use_seed, seed);
   model* hdp = model::init(params, word_map, 0);
   size_t int_ptr = reinterpret_cast< size_t >(hdp);
 

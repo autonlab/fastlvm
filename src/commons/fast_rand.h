@@ -3,6 +3,8 @@
 
 #include <chrono>
 #include <cmath>
+#include <utility>
+#include <iostream>
 
 /* This RNG passes TestU01 */
 class xorshift128plus
@@ -13,8 +15,28 @@ class xorshift128plus
         s[0] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         s[1] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
+    xorshift128plus(unsigned char use_seed, uint64_t seed): xorshift128plus() {
+        if(use_seed) {
+            s[0] = seed;
+            s[1] = seed + 1;
+        }
+    }
     ~xorshift128plus() {   }
-    
+
+    // move constructor
+    xorshift128plus(xorshift128plus &&rhs) noexcept: xorshift128plus() {
+        std::cout << "move constructor: seed=(" << rhs.s[0] << ", " << rhs.s[1] << ")" << std::endl;
+        std::swap(*this, rhs);
+    }
+
+    // move assignment
+    xorshift128plus& operator=(xorshift128plus &&rhs) noexcept {
+        std::cout << "move assignment: seed=(" << rhs.s[0] << ", " << rhs.s[1] << ")" << std::endl;
+        xorshift128plus temp(std::move(rhs));
+        std::swap(*this, temp);
+        return *this;
+    }
+
     inline uint64_t rand()
     {
         uint64_t x = s[0];

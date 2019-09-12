@@ -70,6 +70,8 @@ protected:
     unsigned n_save;                                    // Number of iters in between saving
     unsigned n_threads;                                 // Number of sampling threads
     unsigned n_top_words;                               // Number of top words to be printed per topic
+    unsigned char use_seed;                             // 1 to use the given seed, 0 to use random seed
+    uint64_t seed;                                      // Random seed
 
     virtual int specific_init() { return 0; }           // if sampling algo need some specific inits
     virtual int sampling(const DataIO::corpus&, unsigned) { return 0; }	// sampling on document i outsourced to children

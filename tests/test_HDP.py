@@ -3,6 +3,7 @@ from d3m.metadata import base as metadata_base
 from unittest import TestCase
 from fastlvm import read_corpus, LDA, HDP
 from fastlvm.hdp import HyperParams
+from fastlvm.lda import HyperParams as LDAHyperParams
 
 
 class TestHDP(TestCase):
@@ -16,8 +17,8 @@ class TestHDP(TestCase):
 
     def hdp(self, trngdata, testdata):
         # Init HDP model
-        hp = HyperParams(k=self.num_topics, iters=100, num_top=15, seed=1, frac=0.01)
-        hdp = HDP(hyperparams=hp)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=15, frac=0.01)
+        hdp = HDP(hyperparams=hp, random_seed=7654321)
         hdp.set_training_data(inputs=self.transform(trngdata))
 
         hdp.fit()
@@ -36,7 +37,7 @@ class TestHDP(TestCase):
 
         # TODO is it a good idea to use LDA as the baseline?
         # Use LDA model as baseline
-        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = LDAHyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
         canlda = LDA(hyperparams=hp)
         canlda.set_training_data(inputs=self.transform(self.trngdata))
         canlda.fit()

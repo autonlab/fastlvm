@@ -67,12 +67,14 @@ def list_columns_with_semantic_types(metadata: metadata_base.DataMetadata,
     return columns
 
 
-def split_inputs(tokenized, frac):
+def split_inputs(tokenized, frac, seed=None):
     """Uniformly split the data to training and validation
     :returns a tuple of training and validation
     """
     num_training = int(round((1 - frac) * len(tokenized)))
     num_training = 1 if num_training == 0 else num_training
+    if seed is not None:
+        np.random.seed(seed)
     permutation = np.random.permutation(np.arange(len(tokenized)))
     training = tokenized[permutation[:num_training]]
     if num_training == len(tokenized):  # self._frac == 0

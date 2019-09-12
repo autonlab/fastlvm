@@ -4,7 +4,7 @@
 
 int simpleHDP::sampling(const DataIO::corpus& trngdata, unsigned i)
 {
-    xorshift128plus rng_;
+    xorshift128plus rng_(use_seed, seed);
 
     double * p = new double[Kmax]; // temp variable for sampling
     unsigned *nd_m = new unsigned[Kmax];
@@ -113,7 +113,7 @@ int simpleHDP::updater()
     size_t M = n_mks.size();
     utils::parallel_block_for(0, M, [&](size_t start, size_t end)->void{
         // thread local random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         
         for(size_t m = start; m < end; ++m)
         {
@@ -204,7 +204,7 @@ int aliasHDP::specific_init()
 
 int aliasHDP::sampling(const DataIO::corpus& trngdata, unsigned i)
 {
-    xorshift128plus rng_;
+    xorshift128plus rng_(use_seed, seed);
 
     double * p = new double[Kmax]; // temp variable for sampling
     double * r = new double[Kmax]; // temp variable for sampling
@@ -396,7 +396,7 @@ int aliasHDP::updater()
     size_t M = n_mks.size();
     utils::parallel_block_for(0, M, [&](size_t start, size_t end)->void{
         // thread local random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         
         for(size_t m = start; m < end; ++m)
         {
@@ -537,7 +537,7 @@ int stcHDP::init_train(const DataIO::corpus& trngdata)
     z = new unsigned short*[M];
     utils::parallel_for_progressbar(0, M, [&](size_t m)->void{
         // random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         
         unsigned* nlocal_k = new unsigned[K];
         std::fill(nlocal_k, nlocal_k + K, 0);
@@ -661,7 +661,7 @@ int stcHDP::updater()
 
 int stcHDP::sampling(const DataIO::corpus& trngdata, unsigned i)
 {
-    xorshift128plus rng_;
+    xorshift128plus rng_(use_seed, seed);
 
     double * pu = new double[Kmax]; // temp variable for sampling
     double * pd = new double[Kmax]; // temp variable for sampling
@@ -933,7 +933,7 @@ int stcAliasHDP::init_train(const DataIO::corpus& trngdata)
     z = new unsigned short*[M];
     utils::parallel_for_progressbar(0, M, [&](size_t m)->void{
         // random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         
         unsigned* nlocal_k = new unsigned[K];
         std::fill(nlocal_k, nlocal_k + K, 0);
@@ -1061,7 +1061,7 @@ int stcAliasHDP::updater()
 
 int stcAliasHDP::sampling(const DataIO::corpus& trngdata, unsigned i)
 {
-    xorshift128plus rng_;
+    xorshift128plus rng_(use_seed, seed);
 
     double * pu = new double[Kmax]; // temp variable for sampling
     double * pd = new double[Kmax]; // temp variable for sampling

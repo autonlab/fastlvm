@@ -80,6 +80,8 @@ model* model::init(utils::ParsedArgs args, const std::vector<std::string>& word_
         hdp->n_save = args.n_save;
         hdp->n_threads = args.n_threads;
         hdp->n_top_words = args.n_top_words;
+        hdp->use_seed = args.use_seed;
+        hdp->seed = args.seed;
         hdp->name = args.name;
         hdp->mdir = args.out_path;
 
@@ -88,6 +90,9 @@ model* model::init(utils::ParsedArgs args, const std::vector<std::string>& word_
         
         unsigned ntt = hdp->num_table_threads();
         unsigned nst = hdp->n_threads - ntt;
+
+        // Update global random generator using moving semantic
+        xorshift128plus global_rng_ = xorshift128plus(hdp->use_seed, hdp->seed);
 
         // Copy wordmap
         hdp->id2word = word_map;
@@ -125,6 +130,8 @@ model* model::init(utils::ParsedArgs args, const std::vector<std::string>& word_
             std::cout << "n_save = " << hdp->n_save << std::endl;
             std::cout << "num_threads = " << hdp->n_threads << std::endl;
             std::cout << "num_top_words = " << hdp->n_top_words << std::endl;
+            std::cout << "use_seed = " << static_cast<unsigned>(hdp->use_seed)<< std::endl;
+            std::cout << "seed = " << hdp->seed << std::endl;
             std::cout << "NST = " << nst << std::endl;
             std::cout << "NTT = " << ntt << std::endl;
         }
@@ -288,7 +295,7 @@ double model::evaluate(const DataIO::corpus& testdata) const
     
     utils::parallel_block_for(0, M, [&](size_t start, size_t end)->void{
         // thread local random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         // thread sum
         double tsum = 0;
         size_t ttokens = 0;
@@ -370,7 +377,7 @@ DataIO::corpus model::predict(const DataIO::corpus& testdata) const
     size_t M = testdata.size();
     utils::parallel_block_for(0, M, [&](size_t start, size_t end)->void{
 	// thread local random number generator
-	xorshift128plus rng_;
+	xorshift128plus rng_(use_seed, seed);
 
 	unsigned* nd_m = new unsigned[K];
 	double* p = new double[K];
@@ -474,7 +481,7 @@ int model::init_train(const DataIO::corpus& trngdata)
     z = new unsigned short*[M];
     utils::parallel_for_progressbar(0, M, [&](size_t m)->void{
         // random number generator
-        xorshift128plus rng_;
+        xorshift128plus rng_(use_seed, seed);
         
         unsigned* nlocal_k = new unsigned[K];
         std::fill(nlocal_k, nlocal_k + K, 0);
