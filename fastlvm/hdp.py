@@ -30,7 +30,7 @@ class HyperParams(hyperparams.Hyperparams):
     iters = hyperparams.UniformInt(lower=1, upper=10000, default=100,
                                    semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                    description='The number of iterations of inference.')
-    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1,
+    num_top = hyperparams.UniformInt(lower=1, upper=10000, default=15,
                                      semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                      description='The number of top words requested')
     frac = hyperparams.Uniform(lower=0, upper=1, default=0.01, upper_inclusive=False,
