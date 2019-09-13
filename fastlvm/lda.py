@@ -94,7 +94,6 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
         self._num_top = hyperparams['num_top']
-        self._seed = hyperparams['seed']
         self._frac = hyperparams['frac']  # the fraction of training data set aside as the validation
 
         self._training_inputs = None  # type: Inputs
