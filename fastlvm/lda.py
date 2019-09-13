@@ -37,9 +37,6 @@ class HyperParams(hyperparams.Hyperparams):
                                semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                description='The fraction of training data set aside as the validation. 0 = use all '
                                            'training as validation')
-    seed = hyperparams.UniformInt(lower=-1000000, upper=1000000, default=1,
-                                  semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
-                                  description='A random seed to use')
 
 
 class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]):
@@ -90,9 +87,9 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         ]
     })
 
-    def __init__(self, *, hyperparams: HyperParams) -> None:
+    def __init__(self, *, hyperparams: HyperParams, random_seed: int = 0) -> None:
         # super(LDA, self).__init__()
-        super().__init__(hyperparams=hyperparams)
+        super().__init__(hyperparams=hyperparams, random_seed=random_seed)
         self._this = None
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
@@ -161,7 +158,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
 
         # Uniformly split the data to training and validation
-        training, validation = split_inputs(tokenized, self._frac)
+        training, validation = split_inputs(tokenized, self._frac, self.random_seed)
 
         ldac.fit(self._this, training.tolist(), validation.tolist())
 
