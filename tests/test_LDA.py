@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 from d3m import container
 from d3m.metadata import base as metadata_base
@@ -18,8 +20,8 @@ class TestLDA(TestCase):
 
     def lda(self, trngdata, testdata):
         # Init LDA model
-        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
-        canlda = LDA(hyperparams=hp)
+        hp = HyperParams(k=self.num_topics, iters=100, num_top=1, frac=0.01)
+        canlda = LDA(hyperparams=hp, random_seed=0)
         canlda.set_training_data(inputs=self.transform(trngdata))
 
         canlda.fit()
@@ -55,6 +57,21 @@ class TestLDA(TestCase):
         b = self.canlda.evaluate(inputs=self.testdata)
 
         self.assertAlmostEqual(a, b, places=1)
+
+    def test_pickle(self):
+        """
+        This calls get_params and set_params
+        :return:
+        """
+        self.lda(trngdata=self.trngdata, testdata=self.testdata)
+        b = self.canlda.evaluate(inputs=self.testdata)
+
+        f_string = pickle.dumps(self.canlda)
+        ct_new = pickle.loads(f_string)
+
+        b_new = ct_new.evaluate(inputs=self.testdata)
+
+        self.assertAlmostEqual(b, b_new, delta=0.1)
 
     def transform(self, corpus):
         """
