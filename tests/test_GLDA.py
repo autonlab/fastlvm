@@ -38,7 +38,7 @@ class TestGLDA(TestCase):
 
         # TODO is it a good idea to use LDA as the baseline?
         # Use LDA model as baseline
-        hp = LDAHyperParams(k=self.num_topics, iters=100, num_top=1, seed=1, frac=0.01)
+        hp = LDAHyperParams(k=self.num_topics, iters=100, num_top=1, frac=0.01)
         canlda = LDA(hyperparams=hp)
         canlda.set_training_data(inputs=self.transform(self.trngdata))
         canlda.fit()
