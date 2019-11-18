@@ -89,14 +89,7 @@ setup(name='fastlvm',
       description='fastlvm -- fast search, clustering, and mixture modelling',
       keywords='d3m_primitive',
       cmdclass={'build_ext': build_ext},
-      install_requires=['numpy>=1.13.1',
-                        'scipy>=0.17',
-                        'scikit-learn>=0.18.1',
-                        'gensim',
-                        'python-dateutil>=2.8.1'  # Install python-dateutil 2.8.1 to match d3m requirement. gensim
-                        # 3.8.1 requries smart_open 1.9.0 which requires botocore 1.13.19. botocore has requirement
-                        # python-dateutil<2.8.1,>=2.1 but d3m v2019.11.10 requires python-dateutil==2.8.1.
-                        ],
+      install_requires=['numpy>=1.13.1', 'scipy>=0.17', 'scikit-learn>=0.18.1', 'gensim'],
       ext_modules=[covertreec_module, kmeans_module, gmm_module, lda_module, glda_module, hdp_module, utils_module],
       packages=['fastlvm'],
       entry_points={
