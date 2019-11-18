@@ -12,7 +12,7 @@ from d3m import container, utils
 from d3m.metadata import hyperparams, base as metadata_base
 from d3m.metadata import params
 
-from gensim.models import Word2Vec
+from fastlvm.contrib.gensim.models import Word2Vec
 from fastlvm.utils import get_documents, mk_text_features, tokenize, split_inputs
 
 Inputs = container.DataFrame
