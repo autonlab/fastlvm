@@ -1,3 +1,4 @@
+import copy
 import os
 import typing
 
@@ -55,7 +56,7 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "f410b951-1cb6-481c-8d95-2d97b31d411d",
-        "version": "3.0.1",
+        "version": "3.1.1",
         "name": "Latent Dirichlet Allocation Topic Modelling",
         "description": "This class provides functionality for unsupervised inference on latent Dirichlet allocation, "
                        "which is a probabilistic topic model of corpora of documents which seeks to represent the "
@@ -107,6 +108,20 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
     def __del__(self):
         if self._this is not None:
             ldac.delete(self._this, self._ext)
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "_this":
+                new_v = ldac.deserialize(ldac.serialize(v))
+                setattr(result, k, new_v)
+            elif k == "_ext":
+                setattr(result, k, v)
+            else:
+                setattr(result, k, copy.deepcopy(v, memo))
+        return result
 
     def set_training_data(self, *, inputs: Inputs) -> None:
         """

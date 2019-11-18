@@ -85,7 +85,7 @@ utils_module = Extension('utilsc',
                          )
 
 setup(name='fastlvm',
-      version='3.0.1',
+      version='3.1.1',
       description='fastlvm -- fast search, clustering, and mixture modelling',
       keywords='d3m_primitive',
       cmdclass={'build_ext': build_ext},

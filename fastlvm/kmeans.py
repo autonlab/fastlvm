@@ -70,7 +70,7 @@ class KMeans(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperPara
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "66c3bb07-63f7-409e-9f0f-5b07fbf7cd8e",
-        "version": "3.0.1",
+        "version": "3.1.1",
         "name": "K-means Clustering",
         "description": "This class provides functionality for unsupervised clustering, which according to Wikipedia "
                        "is 'the task of grouping a set of objects in such a way that objects in the same group ("

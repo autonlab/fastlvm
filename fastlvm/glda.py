@@ -83,7 +83,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "a3d490a4-ef39-4de1-be02-4c43726b3b24",
-        "version": "3.0.1",
+        "version": "3.1.1",
         "name": "Gaussian Latent Dirichlet Allocation Topic Modelling",
         "description": "This class provides functionality for unsupervised inference on Gaussian latent Dirichlet "
                        "allocation, which replace LDA's parameterization of 'topics' as categorical distributions "

@@ -67,7 +67,7 @@ class GMM(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "49af9397-d9a2-450f-93eb-c3b631ba6646",
-        "version": "3.0.1",
+        "version": "3.1.1",
         "name": "Gaussian Mixture Models",
         "description": "This class provides functionality for unsupervised inference on Gaussian mixture model, "
                        "which is a probabilistic model that assumes all the data points are generated from a mixture "

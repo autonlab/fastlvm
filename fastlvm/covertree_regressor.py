@@ -32,7 +32,7 @@ class CoverTreeRegressor(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params,
 
     metadata = metadata_base.PrimitiveMetadata({
         "id": "92360c43-6e6f-4ff3-b1e6-5851792d8fcc",
-        "version": "3.0.1",
+        "version": "3.1.1",
         "name": "Nearest Neighbor Regressor with Cover Trees",
         "description": "Regressor based on the k-nearest neighbors search using Cover Trees..",
         "python_path": "d3m.primitives.regression.cover_tree.Fastlvm",
