@@ -151,7 +151,7 @@ def tokenize(raw_documents, vocabulary, analyze):
     Returns a ndarray. Each element is an ndarray of items of unit32 type. The ndarray can be of different length.
     """
     if vocabulary is None or analyze is None:
-        return []
+        return np.array()
 
     tokenized = []
     for doc in raw_documents:
