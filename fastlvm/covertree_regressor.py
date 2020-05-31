@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import covertreec
 import numpy as np
@@ -14,6 +15,7 @@ Outputs = container.DataFrame  # type: DataFrame
 
 class Params(params.Params):
     tree: bytes  # Byte stream represening the tree.
+    training_outputs: Any
 
 
 class HyperParams(hyperparams.Hyperparams):
@@ -199,7 +201,8 @@ OB
             A named tuple of parameters.
         """
 
-        return Params(tree=covertreec.serialize(self._this))
+        return Params(tree=covertreec.serialize(self._this),
+                      training_outputs=self._training_outputs)
 
     def set_params(self, *, params: Params) -> None:
         """
@@ -213,3 +216,4 @@ OB
             A named tuple of parameters.
         """
         self._this = covertreec.deserialize(params['tree'])
+        self._training_outputs = params['training_outputs']

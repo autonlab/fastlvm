@@ -21,6 +21,8 @@ Predicts = container.ndarray  # type: np.ndarray
 
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
+    vectorizer: typing.Any
+    analyze: typing.Any
 
 
 class HyperParams(hyperparams.Hyperparams):
@@ -283,7 +285,9 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A named tuple of parameters.
         """
 
-        return Params(topic_matrix=ldac.serialize(self._this))
+        return Params(topic_matrix=ldac.serialize(self._this),
+                      vectorizer=self._vectorizer,
+                      analyze=self._analyze)
 
     def set_params(self, *, params: Params) -> None:
         """
@@ -297,6 +301,8 @@ class LDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams]
             A named tuple of parameters.
         """
         self._this = ldac.deserialize(params['topic_matrix'])
+        self._vectorizer = params['vectorizer']
+        self._analyze = params['analyze']
 
     def set_random_seed(self) -> None:
         """
