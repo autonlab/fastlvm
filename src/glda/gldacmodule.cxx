@@ -264,15 +264,15 @@ static PyObject *gldac_word_vec(PyObject *self, PyObject *args)
     return NULL;
   
   obj = reinterpret_cast< model * >(int_ptr);
-  Eigen::Map<Eigen::MatrixXd>* results = obj->get_word_vec();
+  Eigen::Map<Eigen::MatrixXd> results = obj->get_word_vec();
   
-  npy_intp vocabSize = results->cols();
-  npy_intp embbedDim = results->rows();
+  npy_intp vocabSize = results.cols();
+  npy_intp embbedDim = results.rows();
   //std::cout<<numPoints<<", "<<numDims<<std::endl;
   npy_intp dims[2] = {embbedDim, vocabSize};
 
   // word vecs
-  PyObject *out_array = PyArray_SimpleNewFromData(2, dims, NPY_FLOAT64, results->data());
+  PyObject *out_array = PyArray_SimpleNewFromData(2, dims, NPY_FLOAT64, results.data());
   PyArray_ENABLEFLAGS((PyArrayObject *)out_array, NPY_ARRAY_OWNDATA);
   
   return out_array;

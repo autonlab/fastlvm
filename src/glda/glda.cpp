@@ -35,7 +35,7 @@ int adGLDA::sampling(const DataIO::corpus& trngdata, unsigned i)
             //std::cout << "I reached 5 " << std::endl;
 
             // do multinomial sampling via cumulative method
-            const pointType& wvec = id2vec->col(w);
+            const pointType& wvec = id2vec.col(w);
 
             //std::cout << "I reached 6 " << std::endl;
 
@@ -129,7 +129,7 @@ int scaGLDA::sampling(const DataIO::corpus& trngdata, unsigned i)
         for (const auto& w : doc)
         {
             // do multinomial sampling via cumulative method
-            const pointType& wvec = id2vec->col(w);           
+            const pointType& wvec = id2vec.col(w);           
             
             /* Travese all non-zero document-topic distribution */
             // Compute probability for each topic
@@ -198,7 +198,7 @@ int scaGLDA::updater()
     });
     utils::parallel_for(0, V, [&](size_t w)->void{
         double *p = new double[K];
-        const pointType& wvec = id2vec->col(w);
+        const pointType& wvec = id2vec.col(w);
 
         // Compute probability for each topic
         double maxLogProb = -1 * std::numeric_limits<double>::max();

@@ -42,7 +42,7 @@ protected:
     unsigned V;                                         // Number of clusters
     static constexpr double alpha = 1.0;                // per document topic proportions Dirichlet prior
     std::vector<std::string> id2word;                   // word map [int => string]
-    Eigen::Map<Eigen::MatrixXd>* id2vec;                // embedding map [inte => vector]
+    Eigen::Map<Eigen::MatrixXd> id2vec;                 // embedding map [inte => vector]
 
     /****** Model variables ******/
     std::vector<SuffStatsTwo> topics;                   // Information about the topics
@@ -87,7 +87,7 @@ public:
     size_t msg_size() const;
     void deserialize(char* buff);                       // Deserialize from a buffer
 
-    Eigen::Map<Eigen::MatrixXd>* get_word_vec() const { return id2vec; }
+    Eigen::Map<Eigen::MatrixXd> get_word_vec() const { return id2vec; }
 };
 
 #endif

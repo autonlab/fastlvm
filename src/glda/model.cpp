@@ -5,14 +5,14 @@ model::model() :
     K(100),
     V(0),
 
-    id2vec(nullptr),
-    
+    id2vec(Eigen::Map<Eigen::MatrixXd>({}, 0, 0)),
+
     rank(0),
     n_iters(1000),
     n_save(200),
     n_threads(8),
     n_top_words(15),
-    
+
     name("default"),
     mdir("./")
 {    }
@@ -24,7 +24,7 @@ model::model(utils::ParsedArgs args, const std::vector<std::string>& word_map,
     
     // Copy wordmap
     id2word(word_map),
-    id2vec(new Eigen::Map<Eigen::MatrixXd>(const_cast<double*>(word_vec.data()), word_vec.rows(), word_vec.cols())),
+    id2vec(Eigen::Map<Eigen::MatrixXd>(const_cast<double*>(word_vec.data()), word_vec.rows(), word_vec.cols())),
 
     // Set parameters
     rank(world_rank),
@@ -65,7 +65,6 @@ model::model(utils::ParsedArgs args, const std::vector<std::string>& word_map,
     
 model::~model()
 { 
-    if (id2vec)     delete id2vec;
 }
 
 model* model::init(utils::ParsedArgs args, const std::vector<std::string>& word_map,
@@ -112,7 +111,7 @@ model* model::init(utils::ParsedArgs args, const std::vector<std::string>& word_
         
         // Copy wordmap
         glda->id2word = word_map;
-        glda->id2vec = new Eigen::Map<Eigen::MatrixXd>(const_cast<double*>(word_vec.data()), word_vec.rows(), word_vec.cols());
+        glda->id2vec = Eigen::Map<Eigen::MatrixXd>(const_cast<double*>(word_vec.data()), word_vec.rows(), word_vec.cols());
 
         // topics
         glda->topics.reserve(glda->K);
@@ -271,7 +270,7 @@ double model::evaluate(const DataIO::corpus& testdata) const
                 
                     
                     // Compute probability for each topic
-                    const pointType& wvec = id2vec->col(doc[j]);
+                    const pointType& wvec = id2vec.col(doc[j]);
                     double maxLogProb = -1 * std::numeric_limits<double>::max();
                     for (unsigned short k = 0; k < K; ++k)
                     {
@@ -301,7 +300,7 @@ double model::evaluate(const DataIO::corpus& testdata) const
             double dsum = 0;
             for(size_t j = 0; j < N; ++j)
             {
-                const pointType& wvec = id2vec->col(doc[j]);
+                const pointType& wvec = id2vec.col(doc[j]);
                 double wsum = 0;
                 double maxLogProb = -1*std::numeric_limits<double>::max();
                 for (unsigned short k = 0; k < K; ++k)
@@ -365,7 +364,7 @@ DataIO::corpus model::predict(const DataIO::corpus& testdata) const
 		    nd_m[topic] -= 1;
 
 		    // do multinomial sampling via cumulative method
-		    const pointType& wvec = id2vec->col(doc[j]);
+		    const pointType& wvec = id2vec.col(doc[j]);
 		    double maxLogProb = -1 * std::numeric_limits<double>::max();
 		    for (unsigned short k = 0; k < K; ++k)
 		    {
@@ -425,7 +424,7 @@ std::vector<std::vector<std::string>> model::get_top_words(unsigned num_words /*
     utils::parallel_for(0, K, [&](size_t k)->void{
         std::vector<unsigned> idx(V);
         std::iota(std::begin(idx), std::end(idx), 0);
-        auto comp_x = [&](unsigned a, unsigned b) { return topics[k].computeProbability(id2vec->col(a)) > topics[k].computeProbability(id2vec->col(b)); };
+        auto comp_x = [&](unsigned a, unsigned b) { return topics[k].computeProbability(id2vec.col(a)) > topics[k].computeProbability(id2vec.col(b)); };
         std::sort(std::begin(idx), std::end(idx), comp_x);
 
         for (unsigned i = 0; i < num_words; ++i)
@@ -461,7 +460,7 @@ int model::init_train(const DataIO::corpus& trngdata)
             map_nd_m[topic] += 1;
 
             // number of instances of word i assigned to topic j
-            topics[topic].addPoint(id2vec->col(w));
+            topics[topic].addPoint(id2vec.col(w));
         }
         // transfer to sparse representation
         for (auto myc : map_nd_m)
@@ -602,12 +601,12 @@ int model::save_model_top_words(std::string filename) const
     for (unsigned short k = 0; k < K; k++)
     {
         std::iota(std::begin(idx), std::end(idx), 0);
-        auto comp_x = [&](unsigned a, unsigned b) { return topics[k].computeProbability(id2vec->col(a)) > topics[k].computeProbability(id2vec->col(b)); };
+        auto comp_x = [&](unsigned a, unsigned b) { return topics[k].computeProbability(id2vec.col(a)) > topics[k].computeProbability(id2vec.col(b)); };
         std::sort(std::begin(idx), std::end(idx), comp_x);
         
         fout << "Topic " << k << "th:" << std::endl;
         for (unsigned i = 0; i < _n_top_words; i++)
-            fout << "\t" << id2word[idx[i]] << "   " << topics[k].computeProbability(id2vec->col(idx[i])) << std::endl;
+            fout << "\t" << id2word[idx[i]] << "   " << topics[k].computeProbability(id2vec.col(idx[i])) << std::endl;
     }
 
     fout.close();
@@ -696,7 +695,7 @@ char* model::serialize() const
 
     // insert id2vec
     shift = sizeof(double)*V*D;
-    start = (char*)(id2vec->data());
+    start = (char*)(id2vec.data());
     end = start + shift;
     std::copy(start, end, pos);
     pos += shift;
@@ -794,7 +793,7 @@ void model::deserialize(char* buff)
     double* p_wk = new double[V*D];
     std::copy(buff, buff + sizeof(double)*V*D, (char*)p_wk);
     buff += sizeof(double)*V*D;
-    id2vec = new Eigen::Map<Eigen::MatrixXd>(p_wk, D, V);
+    id2vec = Eigen::Map<Eigen::MatrixXd>(p_wk, D, V);
     //std::cout << "Word vectors extracted" << std::endl;
 
     // extract topics
