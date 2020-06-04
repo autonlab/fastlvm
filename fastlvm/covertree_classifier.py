@@ -67,7 +67,6 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
         self._fitted = False
         self.hyperparams = hyperparams
         self._INDEX_OUT_OF_BOUND_COUNT_MAX = 3
-        self._index_out_of_bound_count = 0
 
     def __del__(self):
         if self._this is not None:
@@ -130,7 +129,7 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             The k nearest neighbours of each point.
 
         """
-        self._index_out_of_bound_count = 0
+        index_out_of_bound_count = 0
 
         if self._this is None:
             raise ValueError('Fit model first')
@@ -139,33 +138,37 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
 
         # Turn an index to a label. Used when k==1
         def to_label(i):  # FIXME: this may be a bug in the underlying code.
+            nonlocal _y
+            nonlocal index_out_of_bound_count
             if i < len(_y):
                 return _y[i]
             else:
-                if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                if index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
                     self.logger.warning("Index out of bound: index %(i)s is greater than %(max)s. This may be a bug. "
                                         "We'll use the first label.", {
                                             'i': i,
                                             'max': len(_y)
                                         })
-                self._index_out_of_bound_count += 1
+                index_out_of_bound_count += 1
                 return _y[0]
 
         # Turn indices to labels. Used when k > 1
         def to_labels(row):
+            nonlocal _y
+            nonlocal index_out_of_bound_count
             labels = []
             for i in row:
                 if i < len(_y):
                     labels.append(_y[i])
                 else:  # FIXME: this may be a bug in the underlying code.
-                    if self._index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+                    if index_out_of_bound_count < self._INDEX_OUT_OF_BOUND_COUNT_MAX:
                         self.logger.warning("Index out of bounds: index %(idx)s is greater than %(max)s. "
                                             "This may be a bug. We'll replace it with the first value in the row that is "
                                             "less than %(max)s.", {
                                                 'idx': i,
                                                 'max': len(_y)
                                             })
-                    self._index_out_of_bound_count += 1
+                    index_out_of_bound_count += 1
                     for j in row:
                         if j < len(_y):
                             labels.append(_y[j])
@@ -184,8 +187,8 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
                 m, _ = stats.mode(pred, nan_policy='omit')
                 mode.append(m)
 
-        if self._index_out_of_bound_count >= self._INDEX_OUT_OF_BOUND_COUNT_MAX:
-            self.logger.warning("And {} more index out of bounds warnings.".format(1 + self._index_out_of_bound_count -
+        if index_out_of_bound_count >= self._INDEX_OUT_OF_BOUND_COUNT_MAX:
+            self.logger.warning("And {} more index out of bounds warnings.".format(1 + index_out_of_bound_count -
                                                                                   self._INDEX_OUT_OF_BOUND_COUNT_MAX))
 
         output = container.DataFrame(mode, generate_metadata=True)
