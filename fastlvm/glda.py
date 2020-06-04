@@ -22,6 +22,8 @@ Predicts = container.ndarray  # type: np.ndarray
 
 class Params(params.Params):
     topic_matrix: bytes  # Byte stream represening topics
+    vectorizer: typing.Any
+    analyze: typing.Any
 
 
 class HyperParams(hyperparams.Hyperparams):
@@ -170,54 +172,11 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         if self._training_inputs is None:
             raise ValueError("Missing training data.")
 
-        # FIXME Moved the fit implementation into the produce().
-        # Calling fit here and glabc.predict() in produce causes SIGSEGV.
-
-        self._fitted = True
-
-        return base.CallResult(None)
-
-    def get_call_metadata(self) -> bool:
-        """
-        Returns metadata about the last ``fit`` call if it succeeded
-
-        Returns
-        -------
-        Status : bool
-            True/false status of fitting.
-
-        """
-        return self._fitted
-
-    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
-        """
-        Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs
-        using the learned model.
-
-        Parameters
-        ----------
-        inputs : Inputs
-            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to
-            its word id.
-
-        Returns
-        -------
-        Outputs
-            A list of 1d numpy array which represents index of the topic each token belongs to.
-
-        """
-
-        # ============================================================
-        # Start of fit()
-        # ============================================================
         # Create documents from the data-frame
         raw_documents = get_documents(self._training_inputs)
 
         if raw_documents is None:  # training data contains no text fields
-            if self._this is not None:
-                gldac.delete(self._this, self._ext)
-            self._this = None
-            return base.CallResult(inputs)
+            return base.CallResult(None)
 
         # Extract the vocabulary from the inputs data-frame
         self._vectorizer = CountVectorizer()
@@ -256,9 +215,40 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self.__del__()
         self._this = gldac.new(self._k, self._iters, vocab, wv)
         gldac.fit(self._this, training.tolist(), validation.tolist())
-        # ============================================================
-        # End of fit()
-        # ============================================================
+
+        self._fitted = True
+
+        return base.CallResult(None)
+
+    def get_call_metadata(self) -> bool:
+        """
+        Returns metadata about the last ``fit`` call if it succeeded
+
+        Returns
+        -------
+        Status : bool
+            True/false status of fitting.
+
+        """
+        return self._fitted
+
+    def produce(self, *, inputs: Inputs, timeout: float = None, iterations: int = None) -> base.CallResult[Outputs]:
+        """
+        Finds the token topic assignment (and consequently topic-per-document distribution) for the given set of docs
+        using the learned model.
+
+        Parameters
+        ----------
+        inputs : Inputs
+            A list of 1d numpy array of dtype uint32. Each numpy array contains a document with each token mapped to
+            its word id.
+
+        Returns
+        -------
+        Outputs
+            A list of 1d numpy array which represents index of the topic each token belongs to.
+
+        """
 
         # Get per-word topic assignment
         raw_documents, non_text_features = get_documents(inputs, non_text=True)
@@ -334,7 +324,9 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             A named tuple of parameters.
         """
 
-        return Params(topic_matrix=gldac.serialize(self._this))
+        return Params(topic_matrix=gldac.serialize(self._this),
+                      vectorizer=self._vectorizer,
+                      analyze=self._analyze)
 
     def set_params(self, *, params: Params) -> None:
         """
@@ -348,6 +340,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             A named tuple of parameters.
         """
         self._this = gldac.deserialize(params['topic_matrix'])
+        self._vectorizer = params['vectorizer']
+        self._analyze = params['analyze']
 
     def set_random_seed(self) -> None:
         """
