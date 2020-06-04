@@ -40,7 +40,7 @@ class HyperParams(hyperparams.Hyperparams):
     algorithm = hyperparams.Enumeration(
         values=['simple', 'scaGLDA', 'canopyGLDA'],
         default='canopyGLDA',
-        semantic_types=['https://metadata.datadrivendiscovery.org/types/ControlParameter'],
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
         description="Run GLDA using the algorithm: 1. simple: simple AD-GLDA, 2. scaGLDA: ESCA, 3. canopyGLDA: canopy"
     )
     w2v_size = hyperparams.Hyperparameter[int](
