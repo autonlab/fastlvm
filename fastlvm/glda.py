@@ -151,6 +151,8 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._w2v_iters = hyperparams['w2v_iters']
         self.hyperparams = hyperparams
 
+        self._random_generator = np.random.default_rng(seed=self.random_seed)
+
     def __del__(self):
         if self._this is not None:
             gldac.delete(self._this, self._ext)
@@ -210,13 +212,13 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
             if w in w2v.wv:
                 wv[i] = w2v.wv[w]
             else:
-                wv[i] = 2 * np.random.randn(size)
+                wv[i] = 2 * self._random_generator.standard_normal(size)
 
         # Tokenize documents
         tokenized = tokenize(raw_documents, self._vectorizer.vocabulary_, self._analyze)
 
         # Uniformly split the data to training and validation
-        training, validation = split_inputs(tokenized, self._frac)
+        training, validation = split_inputs(tokenized, self._frac, self.random_seed)
 
         # Release the old object to prevent memory leaking
         self.__del__()
