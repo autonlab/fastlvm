@@ -37,10 +37,11 @@ static PyObject *new_gldac(PyObject *self, PyObject *args)
   unsigned K = 100;
   unsigned iters = 1000;
   unsigned n_save = 0; // don't save intermediate and final results to files
+  char* algorithm = "scaGLDA";
   PyObject *in_vocab;
   PyArrayObject *in_array;
 
-  if (!PyArg_ParseTuple(args,"IIO!O!:new_gldac", &K, &iters, &PyList_Type, &in_vocab, &PyArray_Type, &in_array))
+  if (!PyArg_ParseTuple(args,"IIsO!O!:new_gldac", &K, &iters, &algorithm, &PyList_Type, &in_vocab, &PyArray_Type, &in_array))
     return NULL;
 
   /* Convert existing vocab into a map for fast search and insertion */
@@ -61,7 +62,7 @@ static PyObject *new_gldac(PyObject *self, PyObject *args)
   double * fnp = reinterpret_cast< double * >( PyArray_GetPtr(in_array, idx) );
   Eigen::Map<Eigen::MatrixXd> word_vec(fnp, numDims, numWords);
 
-  utils::ParsedArgs params(K, iters, "scaGLDA", n_save);
+  utils::ParsedArgs params(K, iters, algorithm, n_save);
   model* glda = model::init(params, word_map, word_vec, 0);
   size_t int_ptr = reinterpret_cast< size_t >(glda);
 
