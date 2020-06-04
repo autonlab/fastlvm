@@ -37,6 +37,12 @@ class HyperParams(hyperparams.Hyperparams):
     num_top = hyperparams.UniformInt(lower=1, upper=10000, default=1,
                                      semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                      description='The number of top words requested')
+    algorithm = hyperparams.Enumeration(
+        values=['simple', 'scaGLDA', 'canopyGLDA'],
+        default='canopyGLDA',
+        semantic_types=['https://metadata.datadrivendiscovery.org/types/ControlParameter'],
+        description="Run GLDA using the algorithm: 1. simple: simple AD-GLDA, 2. scaGLDA: ESCA, 3. canopyGLDA: canopy"
+    )
     w2v_size = hyperparams.Hyperparameter[int](
         default=30,
         description="Dimensionality of the feature vectors.",
@@ -127,6 +133,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
         self._this = None
         self._k = hyperparams['k']
         self._iters = hyperparams['iters']
+        self._algorithm = hyperparams['algorithm']
         self._num_top = hyperparams['num_top']
         self._frac = hyperparams['frac']  # the fraction of training data set aside as the validation
         self._seed = hyperparams['seed']
@@ -213,7 +220,7 @@ class GLDA(UnsupervisedLearnerPrimitiveBase[Inputs, Outputs, Params, HyperParams
 
         # Release the old object to prevent memory leaking
         self.__del__()
-        self._this = gldac.new(self._k, self._iters, vocab, wv)
+        self._this = gldac.new(self._k, self._iters, self._algorithm, vocab, wv)
         gldac.fit(self._this, training.tolist(), validation.tolist())
 
         self._fitted = True
