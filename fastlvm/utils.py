@@ -73,9 +73,8 @@ def split_inputs(tokenized, frac, seed=None):
     """
     num_training = int(round((1 - frac) * len(tokenized)))
     num_training = 1 if num_training == 0 else num_training
-    if seed is not None:
-        np.random.seed(seed)
-    permutation = np.random.permutation(np.arange(len(tokenized)))
+    random_generator = np.random.default_rng(seed=seed)
+    permutation = random_generator.permutation(np.arange(len(tokenized)))
     training = tokenized[permutation[:num_training]]
     if num_training == len(tokenized):  # self._frac == 0
         validation = training
