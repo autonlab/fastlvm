@@ -83,7 +83,18 @@ class CoverTreeClassifier(SupervisedLearnerPrimitiveBase[Inputs, Outputs, Params
             :param outputs:
         """
 
-        self._training_inputs = inputs.values
+        # mark target variables
+        self._targets = inputs.metadata.list_columns_with_semantic_types(
+            (
+                "https://metadata.datadrivendiscovery.org/types/SuggestedTarget",
+                "https://metadata.datadrivendiscovery.org/types/TrueTarget",
+                "https://metadata.datadrivendiscovery.org/types/Target",
+            )
+        )
+
+        # remove the targets from input data
+        attr_idxs = [col for col in list(range(inputs.shape[1])) if col not in self._targets]
+        self._training_inputs = inputs[attr_idxs].values
         self._training_outputs = outputs.values
         self._fitted = False
 
