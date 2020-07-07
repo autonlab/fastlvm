@@ -22,7 +22,7 @@ class HyperParams(hyperparams.Hyperparams):
     trunc = hyperparams.UniformInt(lower=-1, upper=100, default=-1,
                                    semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                    description='Level of truncation of the tree. -1 means no truncation.')
-    k = hyperparams.UniformInt(lower=1, upper=100, default=3,
+    k = hyperparams.UniformInt(lower=1, upper=100, default=1,
                                semantic_types=['https://metadata.datadrivendiscovery.org/types/TuningParameter'],
                                description='Number of neighbors.')
 
