@@ -19,7 +19,7 @@ Eigen::Map<Eigen::MatrixXd> DataIO::readPointFile(std::string fileName, double *
     fin.read((char *)&numPoints, sizeof(unsigned));
 
     // Printing for debugging
-    std::cout << "\nNumber of points: " << numPoints << "\nNumber of dims : " << numDims << std::endl;
+//    std::cout << "\nNumber of points: " << numPoints << "\nNumber of dims : " << numDims << std::endl;
     
     // allocate memory
     if (data == nullptr)
@@ -33,10 +33,10 @@ Eigen::Map<Eigen::MatrixXd> DataIO::readPointFile(std::string fileName, double *
     
     // Matrix of points
     Eigen::Map<Eigen::MatrixXd> pointMatrix(data, numDims, numPoints);
-    std::cout<<"IsRowMajor?: "<<pointMatrix.IsRowMajor << std::endl;
-
-    std::cout<<pointMatrix.rows() << " " << pointMatrix.cols() << std::endl;
-    std::cout<<pointMatrix(0,0) << " " << pointMatrix(0,1) << " " << pointMatrix(1,0) << std::endl;
+//    std::cout<<"IsRowMajor?: "<<pointMatrix.IsRowMajor << std::endl;
+//
+//    std::cout<<pointMatrix.rows() << " " << pointMatrix.cols() << std::endl;
+//    std::cout<<pointMatrix(0,0) << " " << pointMatrix(0,1) << " " << pointMatrix(1,0) << std::endl;
 
     return pointMatrix;
 }
